@@ -11,9 +11,17 @@
         <relativePath/>
     </parent>
     <artifactId>quick-netty</artifactId>
-    <version>1.0.0-RELEASE</version>
+    <version>1.0.0.RELEASE</version>
 
     <dependencies>
+        <dependency>
+            <groupId>cn.t</groupId>
+            <artifactId>common-util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
