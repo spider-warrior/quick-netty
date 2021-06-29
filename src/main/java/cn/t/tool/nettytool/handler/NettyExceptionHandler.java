@@ -1,15 +1,13 @@
 package cn.t.tool.nettytool.handler;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.*;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 
+@ChannelHandler.Sharable
 public class NettyExceptionHandler extends ChannelDuplexHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyExceptionHandler.class);
