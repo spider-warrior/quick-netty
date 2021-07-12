@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 public class DefaultLauncher extends AbstractLauncher {
 
@@ -29,8 +30,8 @@ public class DefaultLauncher extends AbstractLauncher {
             }
             boolean notTimeout;
             //等待直到超时
-            while ((notTimeout = System.currentTimeMillis() - before < timeout) && serverSuccessCount.get() != getDaemonServiceList().size()) {
-                try { Thread.sleep(500); } catch (InterruptedException e) {logger.error("", e);}
+            while ((notTimeout = System.currentTimeMillis() - before < timeout) && startedDaemonService.size() != daemonServiceList.size()) {
+                LockSupport.parkNanos(500000000);
             }
             if (!notTimeout) {
                 logger.error("Launcher starts timeout!");
@@ -79,13 +80,9 @@ public class DefaultLauncher extends AbstractLauncher {
             for (DaemonService server: getDaemonServiceList()) {
                 server.close();
             }
-            while (serverSuccessCount.get() != 0) {
-                try {
-                    Thread.sleep(500);
-                    logger.info("alive alive remain: " + serverSuccessCount.get());
-                } catch (InterruptedException e) {
-                    logger.error("", e);
-                }
+            while (startedDaemonService.size() != 0) {
+                LockSupport.parkNanos(500000000);
+                logger.info("alive alive remain: " + startedDaemonService.size());
             }
         }
     }

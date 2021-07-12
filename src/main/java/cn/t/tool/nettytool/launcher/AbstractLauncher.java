@@ -1,27 +1,26 @@
 package cn.t.tool.nettytool.launcher;
 
-import cn.t.tool.nettytool.launcher.listener.LauncherListener;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.listener.DaemonListener;
+import cn.t.tool.nettytool.launcher.listener.LauncherListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractLauncher implements Launcher, DaemonListener {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractLauncher.class);
 
     protected volatile boolean stop = false;
-    protected AtomicInteger serverSuccessCount = new AtomicInteger(0);
-    private List<DaemonService> daemonServiceList;
-    protected List<DaemonService> downDaemonService = new Vector<>();
-    private List<LauncherListener> launcherListenerList;
+    protected List<DaemonService> daemonServiceList;
+    protected List<DaemonService> startedDaemonService = new ArrayList<>();
+    protected List<DaemonService> downDaemonService = new ArrayList<>();
+    protected List<LauncherListener> launcherListenerList;
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     /**
@@ -77,14 +76,19 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
 
     @Override
     public void startup(DaemonService server) {
-        serverSuccessCount.addAndGet(1);
-        logger.info("server alive count: " + serverSuccessCount.get());
+        downDaemonService.remove(server);
+        if(!downDaemonService.contains(server)) {
+            startedDaemonService.add(server);
+        }
+        logger.info("server alive count: " + startedDaemonService.size());
     }
 
     @Override
     public void close(DaemonService server) {
-        serverSuccessCount.addAndGet(-1);
-        downDaemonService.add(server);
+        startedDaemonService.remove(server);
+        if(!downDaemonService.contains(server)) {
+            downDaemonService.add(server);
+        }
     }
 
     public List<DaemonService> getDaemonServiceList() {
