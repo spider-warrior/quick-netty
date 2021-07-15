@@ -15,8 +15,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Uncaught exceptions from inbound handlers will propagate up to this handler
-        SocketAddress socketAddress = ctx.channel().remoteAddress();
-        logger.error("[{}]: 读取消息异常, 异常类型: {}, 异常消息: {}", socketAddress, cause.getClass(), cause.getMessage());
+        logger.error("[{} -> {}]: 读取消息异常, 异常类型: {}, 异常消息: {}", ctx.channel().localAddress(), ctx.channel().remoteAddress(), cause.getClass(), cause.getMessage());
     }
 
     @Override
@@ -60,17 +59,17 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     }
 
     protected void handleReaderIdle(ChannelHandlerContext ctx) {
-        logger.error("[{}]: 读取超时,断开连接", ctx.channel().remoteAddress());
+        logger.error("[{} -> {}]: 读取超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
         ctx.close();
     }
 
     protected void handleWriterIdle(ChannelHandlerContext ctx) {
-        logger.error("[{}]: 写出超时,断开连接", ctx.channel().remoteAddress());
+        logger.error("[{} -> {}]: 写出超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
         ctx.close();
     }
 
     protected void handleAllIdle(ChannelHandlerContext ctx) {
-        logger.error("[{}]: 读取或写出超时,断开连接", ctx.channel().remoteAddress());
+        logger.error("[{} -> {}]: 读取或写出超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
         ctx.close();
     }
 
