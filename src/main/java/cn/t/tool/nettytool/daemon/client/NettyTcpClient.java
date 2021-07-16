@@ -32,8 +32,8 @@ public class NettyTcpClient extends AbstractDaemonClient {
             .option(ChannelOption.SO_KEEPALIVE, true)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000)
             .handler(channelInitializer);
-        if(!CollectionUtil.isEmpty(childAttrs)) {
-            for(Map.Entry<AttributeKey<?>, Object> entry: childAttrs.entrySet()) {
+        if (!CollectionUtil.isEmpty(childAttrs)) {
+            for (Map.Entry<AttributeKey<?>, Object> entry : childAttrs.entrySet()) {
                 @SuppressWarnings("unchecked")
                 AttributeKey<Object> key = (AttributeKey<Object>) entry.getKey();
                 bootstrap.attr(key, entry.getValue());
@@ -44,17 +44,17 @@ public class NettyTcpClient extends AbstractDaemonClient {
             ChannelFuture openFuture = bootstrap.connect(host, port);
             clientChannel = openFuture.channel();
             ChannelFuture closeFuture = clientChannel.closeFuture();
-            closeFuture.addListener(f ->  {
-                if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                    for (DaemonListener listener: daemonListenerList) {
-                        listener.close(this);
+            closeFuture.addListener(f -> {
+                    if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                        for (DaemonListener listener : daemonListenerList) {
+                            listener.close(this);
+                        }
                     }
-                }
                 }
             );
             openFuture.sync();
             if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                for (DaemonListener listener: daemonListenerList) {
+                for (DaemonListener listener : daemonListenerList) {
                     listener.startup(this);
                 }
             }
@@ -84,7 +84,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
     }
 
     public void sendMsg(Object msg) {
-        if(clientChannel != null && clientChannel.isOpen()) {
+        if (clientChannel != null && clientChannel.isOpen()) {
             clientChannel.writeAndFlush(msg);
         } else {
             logger.warn("[{}], channel is not available, msg ignored, detail: {}", name, msg);
