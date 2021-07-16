@@ -33,7 +33,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
         ctx.write(msg, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 // Handle write exception here...
-                logger.error("[{}] -> [{}]: 写出消息异常", future.channel().localAddress(), future.channel().remoteAddress());
+                logger.error("[{}] -> [{}]: 写出消息异常,\r\n{}", future.channel().localAddress(), future.channel().remoteAddress(), future.cause());
             }
         }));
     }

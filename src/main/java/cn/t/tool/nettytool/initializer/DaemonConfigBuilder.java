@@ -21,7 +21,7 @@ public class DaemonConfigBuilder {
 
     private final DaemonConfig daemonConfig = new DaemonConfig();
 
-    public DaemonConfigBuilder configByteBufAnalyser(Supplier<ByteBufAnalyser> byteBufAnalyserSupplier) {
+    public DaemonConfigBuilder configByteBufAnalyser(Supplier<? extends ByteBufAnalyser> byteBufAnalyserSupplier) {
         if(byteBufAnalyserSupplier != null) {
             daemonConfig.setNettyB2mDecoderSupplier(() -> {
                 ByteBufAnalyser byteBufAnalyser = byteBufAnalyserSupplier.get();
@@ -65,7 +65,7 @@ public class DaemonConfigBuilder {
         return this;
     }
 
-    public DaemonConfigBuilder configM2bEncoder(List<Supplier<MessageToByteEncoder<?>>> supplierList) {
+    public DaemonConfigBuilder configM2bEncoder(List<Supplier<? extends MessageToByteEncoder<?>>> supplierList) {
         if(!CollectionUtil.isEmpty(supplierList)) {
             daemonConfig.setNettyM2bEncoderListSupplier(() -> {
                 List<MessageToByteEncoder<?>> nettyTcpEncoderList = new ArrayList<>();
@@ -76,7 +76,7 @@ public class DaemonConfigBuilder {
         return this;
     }
 
-    public DaemonConfigBuilder configHandler(List<Supplier<ChannelHandler>> supplierList) {
+    public DaemonConfigBuilder configHandler(List<Supplier<? extends ChannelHandler>> supplierList) {
         if(!CollectionUtil.isEmpty(supplierList)) {
             daemonConfig.setChannelHandlerListSupplier(() -> {
                 List<ChannelHandler> handlerList = new ArrayList<>();
