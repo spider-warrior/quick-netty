@@ -40,7 +40,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) evt;
             switch (e.state()) {
@@ -54,8 +54,10 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
                     handleAllIdle(ctx);
                     break;
                 default:
-                    break;
+                    logger.warn("未处理的Idle事件类型: {}", e);
             }
+        } else {
+            super.userEventTriggered(ctx, evt);
         }
     }
 
