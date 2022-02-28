@@ -44,7 +44,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
         //ChannelOption.SO_KEEPALIVE
         //鸡肋，该选项依赖系统内核，不容易修改，不推荐使用，使用IdleHandler代替即可
         //当server检测到超过一定时间(/proc/sys/net/ipv4/tcp_keepalive_time 7200 即2小时)没有数据传输,那么会向client端发送一个keepalive packet
-        bootstrap.group(bossGroup,workerGroup)
+        bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel.class)
             .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
             .childOption(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
