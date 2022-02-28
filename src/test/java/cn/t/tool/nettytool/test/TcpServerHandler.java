@@ -11,9 +11,12 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * @version V1.0
  * @since 2022-02-28 15:40
  **/
-public class PrintHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class TcpServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
-        System.out.println(msg.readableBytes());
+        int size = msg.readableBytes();
+        byte[] content = new byte[size];
+        msg.readBytes(content);
+        System.out.println(new String(content));
     }
 }

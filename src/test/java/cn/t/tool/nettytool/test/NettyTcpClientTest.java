@@ -22,12 +22,12 @@ public class NettyTcpClientTest {
         //logging
         daemonConfigBuilder.configLogLevel(LogLevel.DEBUG);
         //idle
-        daemonConfigBuilder.configIdleHandler(0, 0, 60);
+        daemonConfigBuilder.configIdleHandler(0, 0, 180);
         //fetch message handler
-        daemonConfigBuilder.configHandler(Collections.singletonList(PrintHandler::new));
+        daemonConfigBuilder.configHandler(Collections.singletonList(TcpClientHandler::new));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         NettyChannelInitializer channelInitializer = new NettyChannelInitializer(daemonConfig);
-        NettyTcpClient nettyTcpClient = new NettyTcpClient("test-client", "www.shansong.com", 443, channelInitializer);
+        NettyTcpClient nettyTcpClient = new NettyTcpClient("test-client", "www.shansong.com", 80, channelInitializer);
         nettyTcpClient.start();
     }
 }

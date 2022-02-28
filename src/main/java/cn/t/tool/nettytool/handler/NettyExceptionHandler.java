@@ -17,6 +17,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Uncaught exceptions from inbound handlers will propagate up to this handler
         logger.error("[{} -> {}]: 读取消息异常, 异常类型: {}, 异常消息: {}", ctx.channel().localAddress(), ctx.channel().remoteAddress(), cause.getClass(), ExceptionUtil.getStackTrace(cause));
+        ctx.close();
     }
 
     @Override

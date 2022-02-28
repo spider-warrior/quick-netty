@@ -28,7 +28,7 @@ public class NettyTcpServerTest {
         //idle
         daemonConfigBuilder.configIdleHandler(0, 0, 10);
         //fetch message handler
-        daemonConfigBuilder.configHandler(Collections.singletonList(PrintHandler::new));
+        daemonConfigBuilder.configHandler(Collections.singletonList(TcpServerHandler::new));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         NettyChannelInitializer nettyChannelInitializer = new NettyChannelInitializer(daemonConfig);
         List<DaemonService> daemonServerList = new ArrayList<>();
