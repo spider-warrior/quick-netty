@@ -22,6 +22,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
 
     private ChannelInitializer<SocketChannel> channelInitializer;
     private Channel serverChannel;
+    private final Map<ChannelOption<?>, Object> childOptions = new ConcurrentHashMap<>();
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
 
     public void doStart() {
@@ -44,13 +45,23 @@ public class NettyTcpServer extends AbstractDaemonServer {
         //ChannelOption.SO_KEEPALIVE
         //鸡肋，该选项依赖系统内核，不容易修改，不推荐使用，使用IdleHandler代替即可
         //当server检测到超过一定时间(/proc/sys/net/ipv4/tcp_keepalive_time 7200 即2小时)没有数据传输,那么会向client端发送一个keepalive packet
-        bootstrap.group(bossGroup, workerGroup)
-            .channel(NioServerSocketChannel.class)
-            .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
-            .childOption(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
-            .option(ChannelOption.SO_BACKLOG,1024)
-            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-            .childHandler(channelInitializer);
+        bootstrap.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).option(ChannelOption.SO_BACKLOG,1024);
+        //childOption
+        if(!childOptions.containsKey(ChannelOption.TCP_NODELAY)) {
+            bootstrap.childOption(ChannelOption.TCP_NODELAY, Boolean.FALSE);
+        }
+        if(!childOptions.containsKey(ChannelOption.SO_REUSEADDR)) {
+            bootstrap.childOption(ChannelOption.SO_REUSEADDR, Boolean.TRUE);
+        }
+        if(!childOptions.containsKey(ChannelOption.ALLOCATOR)) {
+            bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+        }
+        for(Map.Entry<ChannelOption<?>, Object> entry: childOptions.entrySet()) {
+            @SuppressWarnings("unchecked")
+            ChannelOption<Object> key = (ChannelOption<Object>) entry.getKey();
+            bootstrap.childOption(key, entry.getValue());
+        }
+        //childAttr
         if(!CollectionUtil.isEmpty(childAttrs)) {
             for(Map.Entry<AttributeKey<?>, Object> entry: childAttrs.entrySet()) {
                 @SuppressWarnings("unchecked")
@@ -58,6 +69,8 @@ public class NettyTcpServer extends AbstractDaemonServer {
                 bootstrap.childAttr(key, entry.getValue());
             }
         }
+        bootstrap.childHandler(channelInitializer);
+
         try {
             logger.info("TCP Server: [{}] is going start", name);
             ChannelFuture openFuture = bootstrap.bind(port);
@@ -106,6 +119,11 @@ public class NettyTcpServer extends AbstractDaemonServer {
 
     public <T> NettyTcpServer childAttr(AttributeKey<T> childKey, T value) {
         childAttrs.put(childKey, value);
+        return this;
+    }
+
+    public <T> NettyTcpServer childOption(ChannelOption<T> childKey, T value) {
+        childOptions.put(childKey, value);
         return this;
     }
 }
