@@ -16,7 +16,6 @@ public abstract class AbstractDaemonClient extends ListenableDaemonService {
     public void start() {
         logger.debug("client: {} is going to start", name);
         doStart();
-        logger.debug("client: {} is started", name);
     }
 
     @Override
