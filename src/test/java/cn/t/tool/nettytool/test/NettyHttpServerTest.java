@@ -6,6 +6,7 @@ import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyChannelInitializer;
 import cn.t.tool.nettytool.launcher.DefaultLauncher;
+import cn.t.tool.nettytool.test.handler.EventLogHandler;
 import cn.t.util.common.DateUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -26,7 +27,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 /**
  * NettyHttpServerTest
  *
- * @author <a href="mailto:yangjian@ifenxi.com">研发部-杨建</a>
+ * @author <a href="mailto:yangjian@liby.ltd">研发部-杨建</a>
  * @version V1.0
  * @since 2022-03-03 10:40
  **/
@@ -44,6 +45,8 @@ public class NettyHttpServerTest {
         supplierList.add(HttpResponseEncoder::new);
         //http message aggregate
         supplierList.add(() -> new HttpObjectAggregator(1024 * 1024));
+        //log event
+        supplierList.add(EventLogHandler::new);
         //http proxy handler
         supplierList.add(EchoTimeRequestHandler::new);
         daemonConfigBuilder.configHandler(supplierList);

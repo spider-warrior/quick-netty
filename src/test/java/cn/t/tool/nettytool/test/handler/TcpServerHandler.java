@@ -7,7 +7,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 /**
  * PrintHandler
  *
- * @author <a href="mailto:yangjian@ifenxi.com">研发部-杨建</a>
+ * @author <a href="mailto:yangjian@liby.ltd">研发部-杨建</a>
  * @version V1.0
  * @since 2022-02-28 15:40
  **/
