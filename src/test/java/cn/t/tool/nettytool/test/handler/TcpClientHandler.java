@@ -1,4 +1,4 @@
-package cn.t.tool.nettytool.test;
+package cn.t.tool.nettytool.test.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

@@ -4,6 +4,7 @@ import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.daemon.client.NettyTcpClient;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyChannelInitializer;
+import cn.t.tool.nettytool.test.handler.TcpClientHandler;
 import io.netty.handler.logging.LogLevel;
 
 import java.util.Collections;
