@@ -21,13 +21,14 @@ public class NettyTcpServer extends AbstractDaemonServer {
     private static final Logger logger = LoggerFactory.getLogger(NettyTcpServer.class);
 
     private ChannelInitializer<SocketChannel> channelInitializer;
+    private final EventLoopGroup workerGroup;
+    private final boolean shutdownWorkerGroup;
     private Channel serverChannel;
     private final Map<ChannelOption<?>, Object> childOptions = new ConcurrentHashMap<>();
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
 
     public void doStart() {
         EventLoopGroup bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
-        EventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
         ServerBootstrap bootstrap = new ServerBootstrap();
 
         //具体配置参考io.netty.channel.ChannelConfig(for SocketChannel)和io.netty.channel.socket.ServerSocketChannelConfig(for ServerSocketChannel)说明。
@@ -74,6 +75,14 @@ public class NettyTcpServer extends AbstractDaemonServer {
         try {
             logger.info("TCP Server: [{}] is going start", name);
             ChannelFuture openFuture = bootstrap.bind(port);
+            openFuture.addListener(f -> {
+                logger.info("TCP Server: {} has been started successfully, port: {}", name, port);
+                if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                    for (DaemonListener listener: daemonListenerList) {
+                        listener.startup(this);
+                    }
+                }
+            });
             serverChannel = openFuture.channel();
             ChannelFuture closeFuture = serverChannel.closeFuture();
             closeFuture.addListener(f -> {
@@ -83,20 +92,15 @@ public class NettyTcpServer extends AbstractDaemonServer {
                     }
                 }
             });
-            openFuture.sync();
-            logger.info("TCP Server: {} has been started successfully, port: {}", name, port);
-            if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                for (DaemonListener listener: daemonListenerList) {
-                    listener.startup(this);
-                }
-            }
             closeFuture.sync();
         } catch (Exception e) {
             logger.error(String.format("TCP Server: [%s] is Down", name), e);
         } finally {
             logger.info(String.format("TCP Server: [%s] is closed, port: %d ", name, port));
             bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
+            if(shutdownWorkerGroup) {
+                workerGroup.shutdownGracefully();
+            }
         }
     }
 
@@ -110,6 +114,15 @@ public class NettyTcpServer extends AbstractDaemonServer {
     public NettyTcpServer(String name, int port, ChannelInitializer<SocketChannel> channelInitializer) {
         super(name, port);
         this.channelInitializer = channelInitializer;
+        this.workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
+        this.shutdownWorkerGroup = true;
+    }
+
+    public NettyTcpServer(String name, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup) {
+        super(name, port);
+        this.channelInitializer = channelInitializer;
+        this.workerGroup = workerGroup;
+        this.shutdownWorkerGroup = false;
     }
 
     public NettyTcpServer setChannelInitializer(ChannelInitializer<SocketChannel> channelInitializer) {
