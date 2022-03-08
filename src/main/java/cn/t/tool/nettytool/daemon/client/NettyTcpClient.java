@@ -20,12 +20,13 @@ public class NettyTcpClient extends AbstractDaemonClient {
     private static final Logger logger = LoggerFactory.getLogger(NettyTcpClient.class);
 
     private final ChannelInitializer<SocketChannel> channelInitializer;
+    private final EventLoopGroup workerGroup;
+    private final boolean shutdownWorkerGroup;
     private Channel clientChannel;
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
 
     @Override
     public void doStart() {
-        EventLoopGroup workerGroup = new NioEventLoopGroup(1);
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(workerGroup)
             .channel(NioSocketChannel.class)
@@ -62,7 +63,9 @@ public class NettyTcpClient extends AbstractDaemonClient {
             logger.error(String.format("TCP Client: [%s] is Down", name), e);
         } finally {
             logger.info("TCP Client: [{}] is closed", name);
-            workerGroup.shutdownGracefully();
+            if(shutdownWorkerGroup) {
+                workerGroup.shutdownGracefully();
+            }
         }
     }
 
@@ -76,6 +79,14 @@ public class NettyTcpClient extends AbstractDaemonClient {
     public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer) {
         super(name, host, port);
         this.channelInitializer = channelInitializer;
+        this.workerGroup = new NioEventLoopGroup(1);
+        this.shutdownWorkerGroup = true;
+    }
+    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup) {
+        super(name, host, port);
+        this.channelInitializer = channelInitializer;
+        this.workerGroup = workerGroup;
+        this.shutdownWorkerGroup = false;
     }
 
     public void setDaemonListenerList(List<DaemonListener> daemonListenerList) {
