@@ -18,7 +18,7 @@ import java.util.Collections;
  **/
 public class NettyTcpClientTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //logging
         daemonConfigBuilder.configLogLevel(LogLevel.DEBUG);
@@ -30,5 +30,6 @@ public class NettyTcpClientTest {
         NettyChannelInitializer channelInitializer = new NettyChannelInitializer(daemonConfig);
         NettyTcpClient nettyTcpClient = new NettyTcpClient("test-client", "www.shansong.com", 80, channelInitializer);
         nettyTcpClient.start();
+        Thread.sleep(10000);
     }
 }

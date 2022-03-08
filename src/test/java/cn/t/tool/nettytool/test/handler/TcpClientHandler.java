@@ -18,9 +18,9 @@ public class TcpClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     public void channelActive(ChannelHandlerContext ctx) {
         byte[] content = "GET / HTTP/1.1\r\n\r\n".getBytes();
 //        byte[] content = "GET / HTTP/1.1\r\nconnection:keep-alive\r\n\r\n".getBytes();
-        if(true) {
-            throw new RuntimeException("on purpose");
-        }
+//        if(true) {
+//            throw new RuntimeException("on purpose");
+//        }
         ByteBuf buf = ByteBufAllocator.DEFAULT.buffer(content.length);
         buf.writeBytes(content);
         ctx.writeAndFlush(buf);

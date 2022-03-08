@@ -42,6 +42,13 @@ public class NettyTcpClient extends AbstractDaemonClient {
         }
         try {
             ChannelFuture openFuture = bootstrap.connect(host, port);
+            openFuture.addListener(f -> {
+                if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                    for (DaemonListener listener : daemonListenerList) {
+                        listener.startup(this);
+                    }
+                }
+            });
             clientChannel = openFuture.channel();
             ChannelFuture closeFuture = clientChannel.closeFuture();
             closeFuture.addListener(f -> {
@@ -52,13 +59,9 @@ public class NettyTcpClient extends AbstractDaemonClient {
                     }
                 }
             );
-            openFuture.sync();
-            if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                for (DaemonListener listener : daemonListenerList) {
-                    listener.startup(this);
-                }
+            if(shutdownWorkerGroup) {
+                closeFuture.sync();
             }
-            closeFuture.sync();
         } catch (Exception e) {
             logger.error(String.format("TCP Client: [%s] is Down", name), e);
         } finally {
