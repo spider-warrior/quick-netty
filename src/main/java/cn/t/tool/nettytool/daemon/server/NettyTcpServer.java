@@ -86,6 +86,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
             serverChannel = openFuture.channel();
             ChannelFuture closeFuture = serverChannel.closeFuture();
             closeFuture.addListener(f -> {
+                logger.info(String.format("TCP Server: [%s] is closed, port: %d ", name, port));
                 if (!CollectionUtil.isEmpty(daemonListenerList)) {
                     for (DaemonListener listener: daemonListenerList) {
                         listener.close(this);
@@ -96,7 +97,6 @@ public class NettyTcpServer extends AbstractDaemonServer {
         } catch (Exception e) {
             logger.error(String.format("TCP Server: [%s] is Down", name), e);
         } finally {
-            logger.info(String.format("TCP Server: [%s] is closed, port: %d ", name, port));
             bossGroup.shutdownGracefully();
             if(shutdownWorkerGroup) {
                 workerGroup.shutdownGracefully();

@@ -52,6 +52,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
             clientChannel = openFuture.channel();
             ChannelFuture closeFuture = clientChannel.closeFuture();
             closeFuture.addListener(f -> {
+                logger.info("TCP Client: [{}] is closed", name);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         for (DaemonListener listener : daemonListenerList) {
                             listener.close(this);
@@ -65,7 +66,6 @@ public class NettyTcpClient extends AbstractDaemonClient {
         } catch (Exception e) {
             logger.error(String.format("TCP Client: [%s] is Down", name), e);
         } finally {
-            logger.info("TCP Client: [{}] is closed", name);
             if(shutdownWorkerGroup) {
                 workerGroup.shutdownGracefully();
             }
