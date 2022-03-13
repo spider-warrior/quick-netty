@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class DaemonConfig {
-    private LogLevel loggingHandlerLogLevel = LogLevel.DEBUG;
+    private LogLevel loggingHandlerLogLevel;
     private InternalLoggerFactory internalLoggerFactory = Slf4JLoggerFactory.INSTANCE;
     private Supplier<IdleStateHandler> idleStateHandlerSupplier;
     private Supplier<NettyB2mDecoder> nettyB2mDecoderSupplier;

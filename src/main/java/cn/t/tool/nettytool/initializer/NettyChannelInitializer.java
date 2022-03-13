@@ -30,7 +30,10 @@ public class NettyChannelInitializer extends ChannelInitializer<SocketChannel> {
         InternalLoggerFactory.setDefaultFactory(daemonConfig.getInternalLoggerFactory());
         try {
             //logging
-            channelPipeline.addLast(LOGGING_HANDLER, new EventLoggingHandler(daemonConfig.getLoggingHandlerLogLevel()));
+            if(daemonConfig.getLoggingHandlerLogLevel() != null) {
+                channelPipeline.addLast(LOGGING_HANDLER, new EventLoggingHandler(daemonConfig.getLoggingHandlerLogLevel()));
+            }
+            //idle
             if(daemonConfig.getIdleStateHandlerSupplier() != null) {
                 channelPipeline.addLast(IDLE_HANDLER, daemonConfig.getIdleStateHandlerSupplier().get());
             }
