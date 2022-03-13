@@ -51,6 +51,6 @@ public class EventLoggingHandler extends LoggingHandler {
     }
 
     public EventLoggingHandler(LogLevel level) {
-        super(LogConstants.EVENT_LOGGER_NAME, level);
+        super(LogConstants.NETTY_EVENT_LOGGER_NAME, level);
     }
 }

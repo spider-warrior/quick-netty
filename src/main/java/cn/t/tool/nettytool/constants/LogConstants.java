@@ -8,5 +8,5 @@ package cn.t.tool.nettytool.constants;
  * @since 2020-02-28 23:08
  **/
 public class LogConstants {
-    public static final String EVENT_LOGGER_NAME = "EventLogger";
+    public static final String NETTY_EVENT_LOGGER_NAME = "NettyEventLogger";
 }
