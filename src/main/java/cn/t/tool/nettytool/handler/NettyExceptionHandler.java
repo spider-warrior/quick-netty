@@ -25,7 +25,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
         ctx.connect(remoteAddress, localAddress, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 // Handle connect exception here...
-                logger.error("[{}]: 连接失败, \r\n{}", remoteAddress, ExceptionUtil.getStackTrace(future.cause()));
+                logger.error("连接失败: [{}]\r\n{}", remoteAddress, ExceptionUtil.getStackTrace(future.cause()));
             }
         }));
     }
