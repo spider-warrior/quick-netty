@@ -41,5 +41,10 @@ public class UdpClientTest {
             ByteBuf buf = msg.content();
             System.out.println("receive msg: " + buf.toString(Charset.defaultCharset()));
         }
+
+        @Override
+        public void channelActive(ChannelHandlerContext ctx) {
+            System.out.println("========================================= channelActive =========================================");
+        }
     }
 }
