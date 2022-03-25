@@ -7,11 +7,11 @@
     <parent>
         <groupId>cn.t</groupId>
         <artifactId>lib-parent-pom</artifactId>
-        <version>1.0.3.RELEASE</version>
+        <version>1.0.8.RELEASE</version>
         <relativePath/>
     </parent>
     <artifactId>quick-netty</artifactId>
-    <version>1.0.4.RELEASE</version>
+    <version>1.0.3.RELEASE</version>
 
     <dependencies>
         <dependency>
