@@ -16,7 +16,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Uncaught exceptions from inbound handlers will propagate up to this handler
-        logger.error("[{} -> {}]: 读取消息异常, 异常类型: {}, 异常消息: {}", ctx.channel().localAddress(), ctx.channel().remoteAddress(), cause.getClass(), ExceptionUtil.getStackTrace(cause));
+        logger.error("[{} -> {}]: 读取消息异常, 异常类型: {}, 异常消息: {}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), cause.getClass(), ExceptionUtil.getStackTrace(cause));
         ctx.close();
     }
 
@@ -35,7 +35,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
         ctx.write(msg, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 // Handle write exception here...
-                logger.error("[{}] -> [{}]: 写出消息异常,\r\n{}", future.channel().localAddress(), future.channel().remoteAddress(), ExceptionUtil.getStackTrace(future.cause()));
+                logger.error("[{}] -> [{}]: 写出消息异常,\r\n{}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), ExceptionUtil.getStackTrace(future.cause()));
             }
         }));
     }
@@ -63,17 +63,17 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     }
 
     protected void handleReaderIdle(ChannelHandlerContext ctx) {
-        logger.error("[{} -> {}]: 读取超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
+        logger.error("[{} -> {}]: 读取超时,断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
         ctx.close();
     }
 
     protected void handleWriterIdle(ChannelHandlerContext ctx) {
-        logger.error("[{} -> {}]: 写出超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
+        logger.error("[{} -> {}]: 写出超时,断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
         ctx.close();
     }
 
     protected void handleAllIdle(ChannelHandlerContext ctx) {
-        logger.error("[{} -> {}]: 读取或写出超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
+        logger.error("[{} -> {}]: 读取或写出超时,断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
         ctx.close();
     }
 
