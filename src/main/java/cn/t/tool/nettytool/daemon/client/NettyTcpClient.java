@@ -4,7 +4,6 @@ import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
@@ -21,7 +20,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
 
     private final ChannelInitializer<SocketChannel> channelInitializer;
     private final EventLoopGroup workerGroup;
-    private final boolean shutdownWorkerGroup;
+    private final boolean sync;
     private Channel clientChannel;
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
 
@@ -60,36 +59,26 @@ public class NettyTcpClient extends AbstractDaemonClient {
                     }
                 }
             );
-            if(shutdownWorkerGroup) {
+            if(sync) {
                 closeFuture.sync();
             }
         } catch (Exception e) {
             logger.error(String.format("TCP Client: [%s] is Down", name), e);
-        } finally {
-            if(shutdownWorkerGroup) {
-                workerGroup.shutdownGracefully();
-            }
         }
     }
 
     @Override
     public void doClose() {
-        if (clientChannel != null) {
+        if (clientChannel != null && clientChannel.isOpen()) {
             clientChannel.close();
         }
     }
 
-    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer) {
-        super(name, host, port);
-        this.channelInitializer = channelInitializer;
-        this.workerGroup = new NioEventLoopGroup(1);
-        this.shutdownWorkerGroup = true;
-    }
-    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup) {
+    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup, boolean sync) {
         super(name, host, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
-        this.shutdownWorkerGroup = false;
+        this.sync = sync;
     }
 
     public void setDaemonListenerList(List<DaemonListener> daemonListenerList) {

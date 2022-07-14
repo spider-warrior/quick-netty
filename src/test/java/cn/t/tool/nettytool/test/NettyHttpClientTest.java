@@ -8,6 +8,7 @@ import cn.t.tool.nettytool.test.handler.EventLogHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.logging.LogLevel;
 
@@ -49,7 +50,7 @@ public class NettyHttpClientTest {
         daemonConfigBuilder.configHandler(supplierList);
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         NettyChannelInitializer channelInitializer = new NettyChannelInitializer(daemonConfig);
-        NettyTcpClient nettyTcpClient = new NettyTcpClient("http-client", host, port, channelInitializer);
+        NettyTcpClient nettyTcpClient = new NettyTcpClient("http-client", host, port, channelInitializer, new NioEventLoopGroup(1), true);
         nettyTcpClient.start();
     }
 

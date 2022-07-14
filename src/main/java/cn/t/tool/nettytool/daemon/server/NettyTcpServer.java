@@ -22,7 +22,6 @@ public class NettyTcpServer extends AbstractDaemonServer {
 
     private ChannelInitializer<SocketChannel> channelInitializer;
     private final EventLoopGroup workerGroup;
-    private final boolean shutdownWorkerGroup;
     private Channel serverChannel;
     private final Map<ChannelOption<?>, Object> childOptions = new ConcurrentHashMap<>();
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
@@ -98,15 +97,12 @@ public class NettyTcpServer extends AbstractDaemonServer {
             logger.error(String.format("TCP Server: [%s] is Down", name), e);
         } finally {
             bossGroup.shutdownGracefully();
-            if(shutdownWorkerGroup) {
-                workerGroup.shutdownGracefully();
-            }
         }
     }
 
     @Override
     public void doClose() {
-        if(serverChannel != null) {
+        if(serverChannel != null && serverChannel.isOpen()) {
             serverChannel.close();
         }
     }
@@ -115,14 +111,12 @@ public class NettyTcpServer extends AbstractDaemonServer {
         super(name, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
-        this.shutdownWorkerGroup = true;
     }
 
     public NettyTcpServer(String name, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup) {
         super(name, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
-        this.shutdownWorkerGroup = false;
     }
 
     public NettyTcpServer setChannelInitializer(ChannelInitializer<SocketChannel> channelInitializer) {
