@@ -1,6 +1,7 @@
 package cn.t.tool.nettytool.handler;
 
 import cn.t.util.common.ExceptionUtil;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
@@ -64,17 +65,17 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
 
     protected void handleReaderIdle(ChannelHandlerContext ctx) {
         logger.error("[{} -> {}]: 读取超时,断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
-        ctx.close();
+        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);;
     }
 
     protected void handleWriterIdle(ChannelHandlerContext ctx) {
         logger.error("[{} -> {}]: 写出超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
-        ctx.close();
+        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);;
     }
 
     protected void handleAllIdle(ChannelHandlerContext ctx) {
-        logger.error("[{} <-> {}]: 读取或写出超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
-        ctx.close();
+        logger.error("[{} <-> {}]: 读取或写出超时,断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
+        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
 
     // ... override more outbound methods to handle their exceptions as well
