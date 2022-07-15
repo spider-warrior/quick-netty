@@ -32,7 +32,7 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
         doStart();
         //回调监听器
         if (launcherListenerList != null && !launcherListenerList.isEmpty()) {
-            logger.info(String.format("launcher listener size: %d, begin to call launcher listeners",launcherListenerList.size()));
+            logger.info(String.format("launcher listener size: %d, begin to call launcher listeners", launcherListenerList.size()));
             for (LauncherListener listener: launcherListenerList) {
                 listener.startup(this);
             }
@@ -51,7 +51,10 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
         doClose();
         executorService.shutdown();
         try {
-            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            boolean success = executorService.awaitTermination(10, TimeUnit.SECONDS);
+            if(!success) {
+                executorService.shutdownNow();
+            }
         } catch (Exception e) {
             logger.error("Executor Service shutdown error", e);
             executorService.shutdownNow();

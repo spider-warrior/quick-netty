@@ -48,16 +48,10 @@ public class DefaultLauncher extends AbstractLauncher {
                     logger.info("monitor down server....");
                     if (downDaemonService.size() > 0) {
                         logger.info(stop + ", find down server, size: " + downDaemonService.size());
-                        while (downDaemonService.size() > 0) {
-                            DaemonService daemonService = downDaemonService.get(0);
-                            logger.info("server restart: " + daemonService);
-                            if (!stop) {
-                                startServer(daemonService);
-                                downDaemonService.remove(0);
-                            }
-                            else {
-                                break;
-                            }
+                        while (downDaemonService.size() > 0 && !stop) {
+                            DaemonService daemonService = downDaemonService.remove(0);
+                            logger.info("server restarting: " + daemonService);
+                            startServer(daemonService);
                         }
                     }
                     if (!stop) {
