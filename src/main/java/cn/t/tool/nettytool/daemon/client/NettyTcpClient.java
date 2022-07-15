@@ -30,7 +30,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
         bootstrap.group(workerGroup)
             .channel(NioSocketChannel.class)
             .option(ChannelOption.SO_KEEPALIVE, true)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1500)
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2000)
             .handler(channelInitializer);
         if (!CollectionUtil.isEmpty(childAttrs)) {
             for (Map.Entry<AttributeKey<?>, Object> entry : childAttrs.entrySet()) {
