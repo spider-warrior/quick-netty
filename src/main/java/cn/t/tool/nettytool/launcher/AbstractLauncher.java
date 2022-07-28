@@ -21,7 +21,7 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
     protected List<DaemonService> startedDaemonService = new ArrayList<>();
     protected List<DaemonService> downDaemonService = new ArrayList<>();
     protected List<LauncherListener> launcherListenerList;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     /**
      * 启动
