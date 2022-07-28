@@ -75,11 +75,15 @@ public class NettyTcpServer extends AbstractDaemonServer {
             logger.info("TCP Server: [{}] is going start", name);
             ChannelFuture openFuture = bootstrap.bind(port);
             openFuture.addListener(f -> {
-                logger.info("TCP Server: {} has been started successfully, port: {}", name, port);
-                if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                    for (DaemonListener listener: daemonListenerList) {
-                        listener.startup(this);
+                if(f.isSuccess()) {
+                    logger.info("TCP Server: {} has been started successfully, port: {}", name, port);
+                    if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                        for (DaemonListener listener: daemonListenerList) {
+                            listener.startup(this);
+                        }
                     }
+                } else {
+                    logger.error("TCP Server: {} failed to start, port: {}", name, port, f.cause());
                 }
             });
             serverChannel = openFuture.channel();
