@@ -20,7 +20,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
 
     private final ChannelInitializer<SocketChannel> channelInitializer;
     private final EventLoopGroup workerGroup;
-    private final boolean sync;
+    private final boolean syncClose;
     private Channel clientChannel;
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
 
@@ -59,7 +59,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
                     }
                 }
             );
-            if(sync) {
+            if(syncClose) {
                 closeFuture.sync();
             }
         } catch (Exception e) {
@@ -74,11 +74,11 @@ public class NettyTcpClient extends AbstractDaemonClient {
         }
     }
 
-    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup, boolean sync) {
+    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup, boolean syncClose) {
         super(name, host, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
-        this.sync = sync;
+        this.syncClose = syncClose;
     }
 
     public void setDaemonListenerList(List<DaemonListener> daemonListenerList) {
