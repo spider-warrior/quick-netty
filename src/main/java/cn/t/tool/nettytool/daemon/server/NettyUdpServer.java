@@ -18,6 +18,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
 
     private final NettyUdpChannelInitializer channelInitializer;
     private final EventLoopGroup workerGroup;
+    private final boolean syncBind;
     private final boolean syncClose;
     private Channel serverChannel;
 
@@ -31,8 +32,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
 
         try {
             logger.info("UDP Server: [{}] is going start", name);
-            ChannelFuture openFuture = bootstrap.bind(port);
-            openFuture.addListener(f -> {
+            ChannelFuture bindFuture = bootstrap.bind(port).addListener(f -> {
                 if(f.isSuccess()) {
                     logger.info("UDP Server: {} has been started successfully, port: {}", name, port);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
@@ -44,9 +44,11 @@ public class NettyUdpServer extends AbstractDaemonServer {
                     logger.error("UDP Server: {} failed to start, port: {}", name, port, f.cause());
                 }
             });
-            serverChannel = openFuture.channel();
-            ChannelFuture closeFuture = serverChannel.closeFuture();
-            closeFuture.addListener(f -> {
+            if(syncBind) {
+                bindFuture.sync();
+            }
+            serverChannel = bindFuture.channel();
+            ChannelFuture closeFuture = serverChannel.closeFuture().addListener(f -> {
                 logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, port));
                 if (!CollectionUtil.isEmpty(daemonListenerList)) {
                     for (DaemonListener listener: daemonListenerList) {
@@ -69,10 +71,11 @@ public class NettyUdpServer extends AbstractDaemonServer {
         }
     }
 
-    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncClose) {
+    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
         super(name, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
+        this.syncBind = syncBind;
         this.syncClose = syncClose;
     }
 }
