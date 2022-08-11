@@ -8,9 +8,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +16,9 @@ public class NettyUdpServer extends AbstractDaemonServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyUdpServer.class);
 
-    private NettyUdpChannelInitializer channelInitializer;
+    private final NettyUdpChannelInitializer channelInitializer;
     private final EventLoopGroup workerGroup;
+    private final boolean syncClose;
     private Channel serverChannel;
 
     public void doStart() {
@@ -55,7 +54,9 @@ public class NettyUdpServer extends AbstractDaemonServer {
                     }
                 }
             });
-            closeFuture.sync();
+            if(syncClose) {
+                closeFuture.sync();
+            }
         } catch (Exception e) {
             logger.error(String.format("UDP Server: [%s] is Down", name), e);
         }
@@ -68,20 +69,10 @@ public class NettyUdpServer extends AbstractDaemonServer {
         }
     }
 
-    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer) {
-        super(name, port);
-        this.channelInitializer = channelInitializer;
-        this.workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
-    }
-
-    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup) {
+    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncClose) {
         super(name, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
-    }
-
-    public NettyUdpServer setChannelInitializer(NettyUdpChannelInitializer channelInitializer) {
-        this.channelInitializer = channelInitializer;
-        return this;
+        this.syncClose = syncClose;
     }
 }
