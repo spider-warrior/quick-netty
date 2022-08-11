@@ -5,6 +5,7 @@ import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyChannelInitializer;
+import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.launcher.DefaultLauncher;
 import cn.t.tool.nettytool.test.handler.TcpServerHandler;
 import io.netty.handler.logging.LogLevel;
@@ -31,7 +32,7 @@ public class NettyTcpServerTest {
         //fetch message handler
         daemonConfigBuilder.configHandler(Collections.singletonList(TcpServerHandler::new));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
-        NettyChannelInitializer nettyChannelInitializer = new NettyChannelInitializer(daemonConfig);
+        NettyTcpChannelInitializer nettyChannelInitializer = new NettyTcpChannelInitializer(daemonConfig);
         List<DaemonService> daemonServerList = new ArrayList<>();
         NettyTcpServer proxyServer = new NettyTcpServer(String.format("socks5-proxy-server(%s:%s)", "127.0.0.1", serverPort), serverPort, nettyChannelInitializer);
         daemonServerList.add(proxyServer);

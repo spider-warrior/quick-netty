@@ -1,12 +1,15 @@
 package cn.t.tool.nettytool.daemon.server;
 
 import cn.t.tool.nettytool.daemon.listener.DaemonListener;
+import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultThreadFactory;
@@ -20,7 +23,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyTcpServer.class);
 
-    private ChannelInitializer<SocketChannel> channelInitializer;
+    private NettyTcpChannelInitializer channelInitializer;
     private final EventLoopGroup workerGroup;
     private Channel serverChannel;
     private final Map<ChannelOption<?>, Object> childOptions = new ConcurrentHashMap<>();
@@ -111,19 +114,19 @@ public class NettyTcpServer extends AbstractDaemonServer {
         }
     }
 
-    public NettyTcpServer(String name, int port, ChannelInitializer<SocketChannel> channelInitializer) {
+    public NettyTcpServer(String name, int port, NettyTcpChannelInitializer channelInitializer) {
         super(name, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
     }
 
-    public NettyTcpServer(String name, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup) {
+    public NettyTcpServer(String name, int port, NettyTcpChannelInitializer channelInitializer, EventLoopGroup workerGroup) {
         super(name, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
     }
 
-    public NettyTcpServer setChannelInitializer(ChannelInitializer<SocketChannel> channelInitializer) {
+    public NettyTcpServer setChannelInitializer(NettyTcpChannelInitializer channelInitializer) {
         this.channelInitializer = channelInitializer;
         return this;
     }

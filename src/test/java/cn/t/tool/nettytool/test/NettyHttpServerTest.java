@@ -5,6 +5,7 @@ import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyChannelInitializer;
+import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.launcher.DefaultLauncher;
 import cn.t.tool.nettytool.test.handler.EventLogHandler;
 import cn.t.util.common.DateUtil;
@@ -51,7 +52,7 @@ public class NettyHttpServerTest {
         supplierList.add(EchoTimeRequestHandler::new);
         daemonConfigBuilder.configHandler(supplierList);
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
-        NettyChannelInitializer channelInitializer = new NettyChannelInitializer(daemonConfig);
+        NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
         NettyTcpServer proxyServer = new NettyTcpServer("http-proxy-server", 18080, channelInitializer);
         List<DaemonService> daemonServerList = new ArrayList<>();
         daemonServerList.add(proxyServer);
