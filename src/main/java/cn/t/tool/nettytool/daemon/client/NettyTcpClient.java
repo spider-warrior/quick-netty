@@ -20,6 +20,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
 
     private final ChannelInitializer<SocketChannel> channelInitializer;
     private final EventLoopGroup workerGroup;
+    private final boolean syncBind;
     private final boolean syncClose;
     private Channel clientChannel;
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
@@ -40,17 +41,23 @@ public class NettyTcpClient extends AbstractDaemonClient {
             }
         }
         try {
-            ChannelFuture openFuture = bootstrap.connect(host, port);
-            openFuture.addListener(f -> {
-                if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                    for (DaemonListener listener : daemonListenerList) {
-                        listener.startup(this);
+            logger.info("TCP Client: [{}] is going start, target: {}:{}", name, host, port);
+            ChannelFuture bindFuture = bootstrap.connect(host, port).addListener(f -> {
+                if(f.isSuccess()) {
+                    if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                        for (DaemonListener listener : daemonListenerList) {
+                            listener.startup(this);
+                        }
                     }
+                } else {
+                    logger.error("TCP Client: {} failed to start, target address: [{}:{}]", name, host, port, f.cause());
                 }
             });
-            clientChannel = openFuture.channel();
-            ChannelFuture closeFuture = clientChannel.closeFuture();
-            closeFuture.addListener(f -> {
+            if(syncBind) {
+                bindFuture.sync();
+            }
+            clientChannel = bindFuture.channel();
+            ChannelFuture closeFuture = clientChannel.closeFuture().addListener(f -> {
                 logger.info("TCP Client: [{}] is closed", name);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         for (DaemonListener listener : daemonListenerList) {
@@ -74,10 +81,11 @@ public class NettyTcpClient extends AbstractDaemonClient {
         }
     }
 
-    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup, boolean syncClose) {
+    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
         super(name, host, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
+        this.syncBind = syncBind;
         this.syncClose = syncClose;
     }
 
