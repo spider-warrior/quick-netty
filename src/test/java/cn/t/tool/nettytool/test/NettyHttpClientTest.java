@@ -3,7 +3,7 @@ package cn.t.tool.nettytool.test;
 import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.daemon.client.NettyTcpClient;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
-import cn.t.tool.nettytool.initializer.NettyChannelInitializer;
+import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.test.handler.EventLogHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +26,7 @@ import java.util.function.Supplier;
  * @since 2022-03-03 14:40
  **/
 public class NettyHttpClientTest {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String host = "127.0.01";
         int port = 18080;
         String requestUri = "/";
@@ -49,8 +49,8 @@ public class NettyHttpClientTest {
         supplierList.add(() -> new PrintResponseHandler(requestUri, host));
         daemonConfigBuilder.configHandler(supplierList);
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
-        NettyChannelInitializer channelInitializer = new NettyChannelInitializer(daemonConfig);
-        NettyTcpClient nettyTcpClient = new NettyTcpClient("http-client", host, port, channelInitializer, new NioEventLoopGroup(1), true);
+        NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
+        NettyTcpClient nettyTcpClient = new NettyTcpClient("http-client", host, port, channelInitializer, new NioEventLoopGroup(1), false, true);
         nettyTcpClient.start();
     }
 

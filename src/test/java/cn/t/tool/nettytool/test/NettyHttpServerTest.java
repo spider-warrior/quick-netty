@@ -4,7 +4,6 @@ import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
-import cn.t.tool.nettytool.initializer.NettyChannelInitializer;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.launcher.DefaultLauncher;
 import cn.t.tool.nettytool.test.handler.EventLogHandler;
@@ -15,6 +14,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.logging.LogLevel;
 
@@ -53,7 +53,7 @@ public class NettyHttpServerTest {
         daemonConfigBuilder.configHandler(supplierList);
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
-        NettyTcpServer proxyServer = new NettyTcpServer("http-proxy-server", 18080, channelInitializer);
+        NettyTcpServer proxyServer = new NettyTcpServer("http-proxy-server", 18080, channelInitializer, new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()), false, true);
         List<DaemonService> daemonServerList = new ArrayList<>();
         daemonServerList.add(proxyServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();

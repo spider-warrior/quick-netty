@@ -3,7 +3,7 @@ package cn.t.tool.nettytool.test;
 import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.daemon.client.NettyTcpClient;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
-import cn.t.tool.nettytool.initializer.NettyChannelInitializer;
+import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.test.handler.TcpClientHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.logging.LogLevel;
@@ -28,8 +28,8 @@ public class NettyTcpClientTest {
         //fetch message handler
         daemonConfigBuilder.configHandler(Collections.singletonList(TcpClientHandler::new));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
-        NettyChannelInitializer channelInitializer = new NettyChannelInitializer(daemonConfig);
-        NettyTcpClient nettyTcpClient = new NettyTcpClient("test-client", "www.shansong.com", 80, channelInitializer, new NioEventLoopGroup(1), true);
+        NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
+        NettyTcpClient nettyTcpClient = new NettyTcpClient("test-client", "www.shansong.com", 80, channelInitializer, new NioEventLoopGroup(1), false, true);
         nettyTcpClient.start();
         Thread.sleep(10000);
     }
