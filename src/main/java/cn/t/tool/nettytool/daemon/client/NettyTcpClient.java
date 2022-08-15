@@ -50,7 +50,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
                         }
                     }
                 } else {
-                    logger.error("TCP Client: {} failed to start, target address: [{}:{}]", name, host, port, f.cause());
+                    logger.error(String.format("TCP Client: %s failed to start, target address: [%s:%d]", name, host, port), f.cause());
                 }
             });
             if(syncBind) {

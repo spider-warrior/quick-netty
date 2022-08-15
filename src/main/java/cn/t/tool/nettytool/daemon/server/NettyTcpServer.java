@@ -87,7 +87,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
                         }
                     }
                 } else {
-                    logger.error("TCP Server: {} failed to start, port: {}", name, port, f.cause());
+                    logger.error(String.format("TCP Server: %s failed to start, port: %d", name, port), f.cause());
                 }
             });
             if(syncBind) {

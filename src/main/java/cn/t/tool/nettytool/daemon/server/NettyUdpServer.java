@@ -41,7 +41,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
                         }
                     }
                 } else {
-                    logger.error("UDP Server: {} failed to start, port: {}", name, port, f.cause());
+                    logger.error(String.format("UDP Server: %s failed to start, port: %d", name, port), f.cause());
                 }
             });
             if(syncBind) {
