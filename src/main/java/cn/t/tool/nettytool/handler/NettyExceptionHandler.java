@@ -42,6 +42,11 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     }
 
     @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        logger.warn("通道: {}, 未处理的消息: {}", ctx.channel(), msg);
+    }
+
+    @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) evt;
