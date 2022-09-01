@@ -11,6 +11,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
 /**
  * UdpClientTest
@@ -28,11 +29,21 @@ public class UdpClientTest {
             .option(ChannelOption.SO_BROADCAST, true)
             .handler(new UdpClientHandler());
         Channel channel = bootstrap.bind(15566).sync().channel();
-        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 5566);
-        ByteBuf byteBuf = Unpooled.wrappedBuffer("你好服务器!".getBytes(StandardCharsets.UTF_8));
-        channel.writeAndFlush(new DatagramPacket(byteBuf, address)).sync();
-        channel.closeFuture().sync();
-        group.shutdownGracefully();
+        InetSocketAddress address = new InetSocketAddress("192.168.1.125", 88);
+
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            for (int i = 0; i < 10; i++) {
+                ByteBuf byteBuf = Unpooled.wrappedBuffer(("count: " + i + "\n").getBytes(StandardCharsets.UTF_8));
+                channel.writeAndFlush(new DatagramPacket(byteBuf, address));
+            }
+            ByteBuf byteBuf = Unpooled.wrappedBuffer(("===========================\n").getBytes(StandardCharsets.UTF_8));
+            channel.writeAndFlush(new DatagramPacket(byteBuf, address));
+            scanner.nextLine();
+        }
+
+//        channel.closeFuture().sync();
+//        group.shutdownGracefully();
     }
 
     public static class UdpClientHandler extends SimpleChannelInboundHandler<DatagramPacket> {
