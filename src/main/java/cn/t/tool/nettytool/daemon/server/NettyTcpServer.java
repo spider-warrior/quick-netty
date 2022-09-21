@@ -5,10 +5,7 @@ import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.AttributeKey;
@@ -78,12 +75,12 @@ public class NettyTcpServer extends AbstractDaemonServer {
 
         try {
             logger.info("TCP Server: [{}] is going start", name);
-            ChannelFuture bindFuture = bootstrap.bind(port).addListener(f -> {
+            ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)f -> {
                 if(f.isSuccess()) {
                     logger.info("TCP Server: {} has been started successfully, port: {}", name, port);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         for (DaemonListener listener: daemonListenerList) {
-                            listener.startup(this);
+                            listener.startup(this, f.channel());
                         }
                     }
                 } else {
@@ -94,11 +91,11 @@ public class NettyTcpServer extends AbstractDaemonServer {
                 bindFuture.sync();
             }
             serverChannel = bindFuture.channel();
-            ChannelFuture closeFuture = serverChannel.closeFuture().addListener(f -> {
+            ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                 logger.info(String.format("TCP Server: [%s] is closed, port: %d ", name, port));
                 if (!CollectionUtil.isEmpty(daemonListenerList)) {
                     for (DaemonListener listener: daemonListenerList) {
-                        listener.close(this);
+                        listener.close(this, f.channel());
                     }
                 }
             });

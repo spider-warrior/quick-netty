@@ -3,6 +3,7 @@ package cn.t.tool.nettytool.launcher;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.tool.nettytool.launcher.listener.LauncherListener;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +79,7 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
     public abstract void doClose();
 
     @Override
-    public void startup(DaemonService server) {
+    public void startup(DaemonService server, Channel channel) {
         downDaemonService.remove(server);
         if(!downDaemonService.contains(server)) {
             startedDaemonService.add(server);
@@ -87,7 +88,7 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
     }
 
     @Override
-    public void close(DaemonService server) {
+    public void close(DaemonService server, Channel channel) {
         startedDaemonService.remove(server);
         if(!downDaemonService.contains(server)) {
             downDaemonService.add(server);

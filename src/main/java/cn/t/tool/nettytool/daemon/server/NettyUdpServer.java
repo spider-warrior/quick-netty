@@ -4,10 +4,7 @@ import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.tool.nettytool.initializer.NettyUdpChannelInitializer;
 import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
@@ -42,12 +39,12 @@ public class NettyUdpServer extends AbstractDaemonServer {
         bootstrap.handler(channelInitializer);
         try {
             logger.info("UDP Server: [{}] is going start", name);
-            ChannelFuture bindFuture = bootstrap.bind(port).addListener(f -> {
+            ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) f -> {
                 if(f.isSuccess()) {
                     logger.info("UDP Server: {} has been started successfully, port: {}", name, port);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         for (DaemonListener listener: daemonListenerList) {
-                            listener.startup(this);
+                            listener.startup(this, f.channel());
                         }
                     }
                 } else {
@@ -58,11 +55,11 @@ public class NettyUdpServer extends AbstractDaemonServer {
                 bindFuture.sync();
             }
             serverChannel = bindFuture.channel();
-            ChannelFuture closeFuture = serverChannel.closeFuture().addListener(f -> {
+            ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                 logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, port));
                 if (!CollectionUtil.isEmpty(daemonListenerList)) {
                     for (DaemonListener listener: daemonListenerList) {
-                        listener.close(this);
+                        listener.close(this, f.channel());
                     }
                 }
             });

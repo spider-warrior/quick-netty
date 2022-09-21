@@ -42,11 +42,11 @@ public class NettyTcpClient extends AbstractDaemonClient {
         }
         try {
             logger.info("TCP Client: [{}] is going start, target: {}:{}", name, host, port);
-            ChannelFuture bindFuture = bootstrap.connect(host, port).addListener(f -> {
+            ChannelFuture bindFuture = bootstrap.connect(host, port).addListener((ChannelFutureListener)f -> {
                 if(f.isSuccess()) {
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         for (DaemonListener listener : daemonListenerList) {
-                            listener.startup(this);
+                            listener.startup(this, f.channel());
                         }
                     }
                 } else {
@@ -57,11 +57,11 @@ public class NettyTcpClient extends AbstractDaemonClient {
                 bindFuture.sync();
             }
             clientChannel = bindFuture.channel();
-            ChannelFuture closeFuture = clientChannel.closeFuture().addListener(f -> {
+            ChannelFuture closeFuture = clientChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                 logger.info("TCP Client: [{}] is closed", name);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         for (DaemonListener listener : daemonListenerList) {
-                            listener.close(this);
+                            listener.close(this, f.channel());
                         }
                     }
                 }
