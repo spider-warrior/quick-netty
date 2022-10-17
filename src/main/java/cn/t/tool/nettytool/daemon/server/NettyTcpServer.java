@@ -2,6 +2,7 @@ package cn.t.tool.nettytool.daemon.server;
 
 import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
+import cn.t.tool.nettytool.util.NettyEventProcessor;
 import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -72,7 +73,6 @@ public class NettyTcpServer extends AbstractDaemonServer {
             }
         }
         bootstrap.childHandler(channelInitializer);
-
         try {
             logger.info("TCP Server: [{}] is going start", name);
             ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)f -> {
@@ -85,6 +85,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
                     }
                 } else {
                     logger.error(String.format("TCP Server: %s failed to start, port: %d", name, port), f.cause());
+                    NettyEventProcessor.startFailed(f);
                 }
             });
             if(syncBind) {
@@ -93,11 +94,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
             serverChannel = bindFuture.channel();
             ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                 logger.info(String.format("TCP Server: [%s] is closed, port: %d ", name, port));
-                if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                    for (DaemonListener listener: daemonListenerList) {
-                        listener.close(this, f.channel());
-                    }
-                }
+                NettyEventProcessor.daemonClose(daemonListenerList, f, this);
             });
             if(syncClose) {
                 closeFuture.sync();

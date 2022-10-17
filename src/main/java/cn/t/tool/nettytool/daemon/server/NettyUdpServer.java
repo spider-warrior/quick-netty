@@ -2,6 +2,7 @@ package cn.t.tool.nettytool.daemon.server;
 
 import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.tool.nettytool.initializer.NettyUdpChannelInitializer;
+import cn.t.tool.nettytool.util.NettyEventProcessor;
 import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -49,6 +50,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
                     }
                 } else {
                     logger.error(String.format("UDP Server: %s failed to start, port: %d", name, port), f.cause());
+                    NettyEventProcessor.startFailed(f);
                 }
             });
             if(syncBind) {
@@ -57,11 +59,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
             serverChannel = bindFuture.channel();
             ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                 logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, port));
-                if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                    for (DaemonListener listener: daemonListenerList) {
-                        listener.close(this, f.channel());
-                    }
-                }
+                NettyEventProcessor.daemonClose(daemonListenerList, f, this);
             });
             if(syncClose) {
                 closeFuture.sync();
