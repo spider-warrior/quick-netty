@@ -18,4 +18,9 @@ public class NettyTcpListener implements DaemonListener {
     public void close(DaemonService server, Channel channel) {
         logger.info(server.getClass() + " stop....");
     }
+
+    @Override
+    public void close(DaemonService server, Channel channel, Exception e) {
+        logger.error(server.getClass() + " stop....", e);
+    }
 }

@@ -7,4 +7,5 @@ import io.netty.channel.Channel;
 public interface DaemonListener {
     void startup(DaemonService server, Channel channel);
     void close(DaemonService server, Channel channel);
+    void close(DaemonService server, Channel channel, Exception e);
 }

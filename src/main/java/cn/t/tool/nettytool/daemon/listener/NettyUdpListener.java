@@ -19,4 +19,8 @@ public class NettyUdpListener implements DaemonListener {
         logger.info(server.getClass() + " stop....");
     }
 
+    @Override
+    public void close(DaemonService server, Channel channel, Exception e) {
+        logger.error(server.getClass() + " stop....", e);
+    }
 }
