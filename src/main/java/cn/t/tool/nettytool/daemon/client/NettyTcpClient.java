@@ -1,5 +1,6 @@
 package cn.t.tool.nettytool.daemon.client;
 
+import cn.t.tool.nettytool.constants.DaemonServiceChannelConstants;
 import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.Bootstrap;
@@ -51,6 +52,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
                         }
                     }
                 } else {
+                    f.channel().attr(DaemonServiceChannelConstants.STARTUP_ERROR).set(f.cause());
                     logger.error(String.format("TCP Client: %s failed to start, target address: [%s:%d]", name, host, port), f.cause());
                 }
             });
@@ -60,13 +62,19 @@ public class NettyTcpClient extends AbstractDaemonClient {
             clientChannel = bindFuture.channel();
             ChannelFuture closeFuture = clientChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                 logger.info("TCP Client: [{}] is closed", name);
-                    if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                    Throwable throwable = f.channel().attr(DaemonServiceChannelConstants.STARTUP_ERROR).get();
+                    if(throwable == null) {
                         for (DaemonListener listener : daemonListenerList) {
                             listener.close(this, f.channel());
                         }
+                    } else {
+                        for (DaemonListener listener : daemonListenerList) {
+                            listener.close(this, f.channel(), throwable);
+                        }
                     }
                 }
-            );
+            });
             if(syncClose) {
                 closeFuture.sync();
             }

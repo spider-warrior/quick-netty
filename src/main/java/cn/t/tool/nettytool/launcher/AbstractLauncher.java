@@ -96,8 +96,8 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
     }
 
     @Override
-    public void close(DaemonService server, Channel channel, Exception e) {
-        logger.error("server start failed", e);
+    public void close(DaemonService server, Channel channel, Throwable t) {
+        logger.error("server start failed", t);
     }
 
     public List<DaemonService> getDaemonServiceList() {
