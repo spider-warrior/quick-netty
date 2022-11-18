@@ -66,22 +66,22 @@ public class DaemonConfigBuilder<C extends Channel> {
         return this;
     }
 
-    public DaemonConfigBuilder<C> configM2bEncoder(List<Function<C, ? extends MessageToByteEncoder<?>>> supplierList) {
-        if(!CollectionUtil.isEmpty(supplierList)) {
+    public DaemonConfigBuilder<C> configM2bEncoder(List<Function<C, ? extends MessageToByteEncoder<?>>> factoriesList) {
+        if(!CollectionUtil.isEmpty(factoriesList)) {
             daemonConfig.setNettyM2bEncoderListFactory(ch -> {
                 List<MessageToByteEncoder<?>> nettyTcpEncoderList = new ArrayList<>();
-                supplierList.forEach(supplier -> nettyTcpEncoderList.add(supplier.apply(ch)));
+                factoriesList.forEach(factory -> nettyTcpEncoderList.add(factory.apply(ch)));
                 return nettyTcpEncoderList;
             });
         }
         return this;
     }
 
-    public DaemonConfigBuilder<C> configHandler(List<Function<C, ? extends ChannelHandler>> supplierList) {
-        if(!CollectionUtil.isEmpty(supplierList)) {
+    public DaemonConfigBuilder<C> configHandler(List<Function<C, ? extends ChannelHandler>> factoriesList) {
+        if(!CollectionUtil.isEmpty(factoriesList)) {
             daemonConfig.setChannelHandlerListFactory(ch -> {
                 List<ChannelHandler> handlerList = new ArrayList<>();
-                supplierList.forEach(supplier -> handlerList.add(supplier.apply(ch)));
+                factoriesList.forEach(factory -> handlerList.add(factory.apply(ch)));
                 return handlerList;
             });
         }
