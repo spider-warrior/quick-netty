@@ -25,7 +25,7 @@ import java.util.List;
  **/
 public class NettyTcpServerTest {
     public static void main(String[] args) {
-        int[] serverPorts = new int[]{18080};
+        int[] serverPorts = new int[]{18080, 18081};
         DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //logging
         daemonConfigBuilder.configLogLevel(LogLevel.DEBUG);
@@ -36,8 +36,8 @@ public class NettyTcpServerTest {
         DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer nettyChannelInitializer = new NettyTcpChannelInitializer(daemonConfig);
         List<DaemonService> daemonServerList = new ArrayList<>();
-        NettyTcpServer proxyServer = new NettyTcpServer(String.format("socks5-proxy-server(%s:%s)", "127.0.0.1", Arrays.toString(serverPorts)), serverPorts, nettyChannelInitializer, new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()), false, true);
-        daemonServerList.add(proxyServer);
+        NettyTcpServer tcpServer = new NettyTcpServer(String.format("tcp-server(%s:%s)", "127.0.0.1", Arrays.toString(serverPorts)), serverPorts, nettyChannelInitializer, new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()), false, true);
+        daemonServerList.add(tcpServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();
         defaultLauncher.setDaemonServiceList(daemonServerList);
         defaultLauncher.startup();
