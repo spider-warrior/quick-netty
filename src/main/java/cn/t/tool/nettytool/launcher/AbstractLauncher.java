@@ -96,10 +96,8 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
             channelList.remove(channel);
             if(channelList.size() == 0) {
                 startedDaemonServiceChannelMap.remove(server);
+                downDaemonService.add(server);
             }
-        }
-        if(!downDaemonService.contains(server)) {
-            downDaemonService.add(server);
         }
     }
 
