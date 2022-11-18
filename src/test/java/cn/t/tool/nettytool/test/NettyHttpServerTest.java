@@ -15,13 +15,14 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.logging.LogLevel;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -34,28 +35,28 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
  **/
 public class NettyHttpServerTest {
     public static void main(String[] args) {
-        DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
+        DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //logging handler
         daemonConfigBuilder.configLogLevel(LogLevel.DEBUG);
         //idle handler
         daemonConfigBuilder.configIdleHandler(0, 0, 60);
-        List<Supplier<? extends ChannelHandler>> supplierList = new ArrayList<>();
+        List<Function<SocketChannel, ? extends ChannelHandler>> factoriesList = new ArrayList<>();
         //http request decoder
-        supplierList.add(HttpRequestDecoder::new);
+        factoriesList.add(ch -> new HttpRequestDecoder());
         //http response encoder
-        supplierList.add(HttpResponseEncoder::new);
+        factoriesList.add(ch -> new HttpResponseEncoder());
         //http message aggregate
-        supplierList.add(() -> new HttpObjectAggregator(1024 * 1024));
+        factoriesList.add(ch -> new HttpObjectAggregator(1024 * 1024));
         //log event
-        supplierList.add(EventLogHandler::new);
+        factoriesList.add(ch -> new EventLogHandler());
         //http proxy handler
-        supplierList.add(EchoTimeRequestHandler::new);
-        daemonConfigBuilder.configHandler(supplierList);
-        DaemonConfig daemonConfig = daemonConfigBuilder.build();
+        factoriesList.add(ch -> new EchoTimeRequestHandler());
+        daemonConfigBuilder.configHandler(factoriesList);
+        DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
-        NettyTcpServer proxyServer = new NettyTcpServer("http-proxy-server", new int[] {5566}, channelInitializer, new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()), false, true);
+        NettyTcpServer httpServer = new NettyTcpServer("http-server", new int[]{5566}, channelInitializer, new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()), false, true);
         List<DaemonService> daemonServerList = new ArrayList<>();
-        daemonServerList.add(proxyServer);
+        daemonServerList.add(httpServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();
         defaultLauncher.setDaemonServiceList(daemonServerList);
         defaultLauncher.startup();

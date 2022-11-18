@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +28,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
     private final EventLoopGroup workerGroup;
     private final boolean syncBind;
     private final boolean syncClose;
-    private List<Channel> serverChannelList;
+    private final List<Channel> serverChannelList = new ArrayList<>();
     private final Map<ChannelOption<?>, Object> childOptions = new ConcurrentHashMap<>();
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
 
@@ -96,11 +97,15 @@ public class NettyTcpServer extends AbstractDaemonServer {
                 }
                 serverChannelList.add(bindFuture.channel());
             }
+            List<ChannelFuture> closeFutureList = new ArrayList<>(serverChannelList.size());
             for (Channel serverChannel : serverChannelList) {
                 ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                     logger.info(String.format("TCP Server: [%s] is closed, port: %d ", name, ((InetSocketAddress)serverChannel.localAddress()).getPort()));
                     NettyEventProcessor.daemonClose(daemonListenerList, f, this);
                 });
+                closeFutureList.add(closeFuture);
+            }
+            for (ChannelFuture closeFuture : closeFutureList) {
                 if(syncClose) {
                     closeFuture.sync();
                 }
