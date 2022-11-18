@@ -56,8 +56,8 @@ public class NettyHttpClientTest {
         daemonConfigBuilder.configHandler(factoriesList);
         DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
-        NettyTcpClient nettyTcpClient = new NettyTcpClient("http-client", host, port, channelInitializer, new NioEventLoopGroup(1), false, true);
-        nettyTcpClient.start();
+        NettyTcpClient httpClient = new NettyTcpClient("http-client", host, port, channelInitializer, new NioEventLoopGroup(1), false, true);
+        httpClient.start();
     }
 
     private static class PrintResponseHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
