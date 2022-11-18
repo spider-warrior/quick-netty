@@ -2,7 +2,6 @@ package cn.t.tool.nettytool.daemon.server;
 
 import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.tool.nettytool.initializer.NettyUdpChannelInitializer;
-import cn.t.tool.nettytool.util.NettyEventProcessor;
 import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -25,7 +24,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
     private final EventLoopGroup workerGroup;
     private final boolean syncBind;
     private final boolean syncClose;
-    private List<Channel> serverChannelList;
+    private final List<Channel> serverChannelList = new ArrayList<>();
     private final Map<AttributeKey<?>, Object> attrs = new ConcurrentHashMap<>();
 
     public void doStart() {
@@ -54,7 +53,6 @@ public class NettyUdpServer extends AbstractDaemonServer {
                         }
                     } else {
                         logger.error(String.format("UDP Server: %s failed to start, port: %d", name, port), f.cause());
-                        NettyEventProcessor.startFailed(f);
                     }
                 });
                 if(syncBind) {
@@ -66,7 +64,18 @@ public class NettyUdpServer extends AbstractDaemonServer {
             for (Channel serverChannel : serverChannelList) {
                 ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                     logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, ((InetSocketAddress)serverChannel.localAddress()).getPort()));
-                    NettyEventProcessor.daemonClose(daemonListenerList, f, this);
+                    if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                        Throwable throwable = f.cause();
+                        if(throwable == null) {
+                            for (DaemonListener listener: daemonListenerList) {
+                                listener.close(this, f.channel());
+                            }
+                        } else {
+                            for (DaemonListener listener: daemonListenerList) {
+                                listener.close(this, f.channel(), throwable);
+                            }
+                        }
+                    }
                 });
                 closeFutureList.add(closeFuture);
             }

@@ -30,7 +30,7 @@ public class DefaultLauncher extends AbstractLauncher {
             }
             boolean notTimeout;
             //等待直到超时
-            while ((notTimeout = System.currentTimeMillis() - before < timeout) && startedDaemonService.size() != daemonServiceList.size()) {
+            while ((notTimeout = System.currentTimeMillis() - before < timeout) && startedDaemonServiceChannelMap.size() != daemonServiceList.size()) {
                 LockSupport.parkNanos(500000000);
             }
             if (!notTimeout) {
@@ -74,9 +74,9 @@ public class DefaultLauncher extends AbstractLauncher {
             for (DaemonService server: getDaemonServiceList()) {
                 server.close();
             }
-            while (startedDaemonService.size() != 0) {
+            while (startedDaemonServiceChannelMap.size() != 0) {
                 LockSupport.parkNanos(500000000);
-                logger.info("alive alive remain: " + startedDaemonService.size());
+                logger.info("alive alive remain: " + startedDaemonServiceChannelMap.size());
             }
         }
     }

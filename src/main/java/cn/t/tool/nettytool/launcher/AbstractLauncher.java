@@ -7,8 +7,10 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -19,8 +21,8 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
 
     protected volatile boolean stop = false;
     protected List<DaemonService> daemonServiceList;
-    protected List<DaemonService> startedDaemonService = new ArrayList<>();
-    protected List<DaemonService> downDaemonService = new ArrayList<>();
+    protected Map<DaemonService, List<Channel>> startedDaemonServiceChannelMap = new ConcurrentHashMap<>();
+    protected List<DaemonService> downDaemonService = new Vector<>();
     protected List<LauncherListener> launcherListenerList;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -80,16 +82,22 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
 
     @Override
     public void startup(DaemonService server, Channel channel) {
-        downDaemonService.remove(server);
         if(!downDaemonService.contains(server)) {
-            startedDaemonService.add(server);
+            List<Channel> channelList = startedDaemonServiceChannelMap.computeIfAbsent(server, k -> new Vector<>(1));
+            channelList.add(channel);
         }
-        logger.info("server alive count: " + startedDaemonService.size());
+        logger.info("server alive count: " + startedDaemonServiceChannelMap.size());
     }
 
     @Override
     public void close(DaemonService server, Channel channel) {
-        startedDaemonService.remove(server);
+        synchronized (server) {
+            List<Channel> channelList = startedDaemonServiceChannelMap.get(server);
+            channelList.remove(channel);
+            if(channelList.size() == 0) {
+                startedDaemonServiceChannelMap.remove(server);
+            }
+        }
         if(!downDaemonService.contains(server)) {
             downDaemonService.add(server);
         }
