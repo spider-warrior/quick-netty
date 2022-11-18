@@ -11,6 +11,8 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +24,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
     private final EventLoopGroup workerGroup;
     private final boolean syncBind;
     private final boolean syncClose;
-    private Channel serverChannel;
+    private List<Channel> serverChannelList;
     private final Map<AttributeKey<?>, Object> attrs = new ConcurrentHashMap<>();
 
     public void doStart() {
@@ -40,29 +42,33 @@ public class NettyUdpServer extends AbstractDaemonServer {
         bootstrap.handler(channelInitializer);
         try {
             logger.info("UDP Server: [{}] is going start", name);
-            ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) f -> {
-                if(f.isSuccess()) {
-                    logger.info("UDP Server: {} has been started successfully, port: {}", name, port);
-                    if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                        for (DaemonListener listener: daemonListenerList) {
-                            listener.startup(this, f.channel());
+            for (int port : ports) {
+                ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) f -> {
+                    if(f.isSuccess()) {
+                        logger.info("UDP Server: {} has been started successfully, port: {}", name, port);
+                        if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                            for (DaemonListener listener: daemonListenerList) {
+                                listener.startup(this, f.channel());
+                            }
                         }
+                    } else {
+                        logger.error(String.format("UDP Server: %s failed to start, port: %d", name, port), f.cause());
+                        NettyEventProcessor.startFailed(f);
                     }
-                } else {
-                    logger.error(String.format("UDP Server: %s failed to start, port: %d", name, port), f.cause());
-                    NettyEventProcessor.startFailed(f);
+                });
+                if(syncBind) {
+                    bindFuture.sync();
                 }
-            });
-            if(syncBind) {
-                bindFuture.sync();
+                serverChannelList.add(bindFuture.channel());
             }
-            serverChannel = bindFuture.channel();
-            ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
-                logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, port));
-                NettyEventProcessor.daemonClose(daemonListenerList, f, this);
-            });
-            if(syncClose) {
-                closeFuture.sync();
+            for (Channel serverChannel : serverChannelList) {
+                ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
+                    logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, ((InetSocketAddress)serverChannel.localAddress()).getPort()));
+                    NettyEventProcessor.daemonClose(daemonListenerList, f, this);
+                });
+                if(syncClose) {
+                    closeFuture.sync();
+                }
             }
         } catch (Exception e) {
             logger.error(String.format("UDP Server: [%s] is Down", name), e);
@@ -71,13 +77,15 @@ public class NettyUdpServer extends AbstractDaemonServer {
 
     @Override
     public void doClose() {
-        if(serverChannel != null && serverChannel.isOpen()) {
-            serverChannel.close();
+        for (Channel serverChannel : serverChannelList) {
+            if(serverChannel != null && serverChannel.isOpen()) {
+                serverChannel.close();
+            }
         }
     }
 
-    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
-        super(name, port);
+    public NettyUdpServer(String name, int[] ports, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
+        super(name, ports);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
         this.syncBind = syncBind;
