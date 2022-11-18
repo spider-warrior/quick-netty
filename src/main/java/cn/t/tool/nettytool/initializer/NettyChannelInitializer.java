@@ -20,7 +20,7 @@ import static cn.t.tool.nettytool.constants.HandlerNames.*;
 
 public class NettyChannelInitializer<C extends Channel> extends ChannelInitializer<C> {
 
-    private final DaemonConfig daemonConfig;
+    private final DaemonConfig<C> daemonConfig;
 
     @Override
     protected void initChannel(C ch) {
@@ -34,30 +34,30 @@ public class NettyChannelInitializer<C extends Channel> extends ChannelInitializ
                 channelPipeline.addLast(LOGGING_HANDLER, new EventLoggingHandler(daemonConfig.getLoggingHandlerLogLevel()));
             }
             //idle
-            if(daemonConfig.getIdleStateHandlerSupplier() != null) {
-                channelPipeline.addLast(IDLE_HANDLER, daemonConfig.getIdleStateHandlerSupplier().get());
+            if(daemonConfig.getIdleStateHandlerFactory() != null) {
+                channelPipeline.addLast(IDLE_HANDLER, daemonConfig.getIdleStateHandlerFactory().apply(ch));
             }
             // b2m decoder
-            if(daemonConfig.getNettyB2mDecoderSupplier() != null) {
-                channelPipeline.addLast(MSG_DECODER, daemonConfig.getNettyB2mDecoderSupplier().get());
+            if(daemonConfig.getNettyB2mDecoderFactory() != null) {
+                channelPipeline.addLast(MSG_DECODER, daemonConfig.getNettyB2mDecoderFactory().apply(ch));
             }
             // m2b encoder
-            if(daemonConfig.getNettyM2bEncoderListSupplier() != null) {
-                List<MessageToByteEncoder<?>>nettyTcpEncoderList = daemonConfig.getNettyM2bEncoderListSupplier().get();
+            if(daemonConfig.getNettyM2bEncoderListFactory() != null) {
+                List<MessageToByteEncoder<?>>nettyTcpEncoderList = daemonConfig.getNettyM2bEncoderListFactory().apply(ch);
                 if(!CollectionUtil.isEmpty(nettyTcpEncoderList)) {
                     nettyTcpEncoderList.forEach(encoder -> channelPipeline.addLast(ENCODER_PREFIX + encoder.getClass().getName(), encoder));
                 }
             }
             // m2m encoder
-            if(daemonConfig.getNettyM2mEncoderListSupplier() != null) {
-                List<MessageToMessageEncoder<?>>nettyTcpEncoderList = daemonConfig.getNettyM2mEncoderListSupplier().get();
+            if(daemonConfig.getNettyM2mEncoderListFactory() != null) {
+                List<MessageToMessageEncoder<?>>nettyTcpEncoderList = daemonConfig.getNettyM2mEncoderListFactory().apply(ch);
                 if(!CollectionUtil.isEmpty(nettyTcpEncoderList)) {
                     nettyTcpEncoderList.forEach(encoder -> channelPipeline.addLast(ENCODER_PREFIX + encoder.getClass().getName(), encoder));
                 }
             }
             // handler
-            if(daemonConfig.getChannelHandlerListSupplier() != null) {
-                List<ChannelHandler> channelHandlerList = daemonConfig.getChannelHandlerListSupplier().get();
+            if(daemonConfig.getChannelHandlerListFactory() != null) {
+                List<ChannelHandler> channelHandlerList = daemonConfig.getChannelHandlerListFactory().apply(ch);
                 if(!CollectionUtil.isEmpty(channelHandlerList)) {
                     NettyB2mDecoder nettyB2mDecoder = (NettyB2mDecoder)channelPipeline.get(MSG_DECODER);
                     channelHandlerList.forEach(handler -> {
@@ -74,7 +74,7 @@ public class NettyChannelInitializer<C extends Channel> extends ChannelInitializ
         }
     }
 
-    public NettyChannelInitializer(DaemonConfig daemonConfig) {
+    public NettyChannelInitializer(DaemonConfig<C> daemonConfig) {
         this.daemonConfig = daemonConfig;
     }
 }

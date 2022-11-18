@@ -1,6 +1,7 @@
 package cn.t.tool.nettytool.daemon;
 
 import cn.t.tool.nettytool.decoder.NettyB2mDecoder;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
@@ -10,16 +11,16 @@ import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
-public class DaemonConfig {
+public class DaemonConfig<C extends Channel> {
     private LogLevel loggingHandlerLogLevel;
     private InternalLoggerFactory internalLoggerFactory = Slf4JLoggerFactory.INSTANCE;
-    private Supplier<IdleStateHandler> idleStateHandlerSupplier;
-    private Supplier<NettyB2mDecoder> nettyB2mDecoderSupplier;
-    private Supplier<List<MessageToMessageEncoder<?>>> nettyM2mEncoderListSupplier;
-    private Supplier<List<MessageToByteEncoder<?>>> nettyM2bEncoderListSupplier;
-    private Supplier<List<ChannelHandler>> channelHandlerListSupplier;
+    private Function<C, IdleStateHandler> idleStateHandlerFactory;
+    private Function<C, NettyB2mDecoder> nettyB2mDecoderFactory;
+    private Function<C, List<MessageToMessageEncoder<?>>> nettyM2mEncoderListFactory;
+    private Function<C, List<MessageToByteEncoder<?>>> nettyM2bEncoderListFactory;
+    private Function<C, List<ChannelHandler>> channelHandlerListFactory;
 
     public LogLevel getLoggingHandlerLogLevel() {
         return loggingHandlerLogLevel;
@@ -37,45 +38,43 @@ public class DaemonConfig {
         this.internalLoggerFactory = internalLoggerFactory;
     }
 
-    public Supplier<IdleStateHandler> getIdleStateHandlerSupplier() {
-        return idleStateHandlerSupplier;
+    public Function<C, IdleStateHandler> getIdleStateHandlerFactory() {
+        return idleStateHandlerFactory;
     }
 
-    public void setIdleStateHandlerSupplier(Supplier<IdleStateHandler> idleStateHandlerSupplier) {
-        this.idleStateHandlerSupplier = idleStateHandlerSupplier;
+    public void setIdleStateHandlerFactory(Function<C, IdleStateHandler> idleStateHandlerFactory) {
+        this.idleStateHandlerFactory = idleStateHandlerFactory;
     }
 
-    public Supplier<NettyB2mDecoder> getNettyB2mDecoderSupplier() {
-        return nettyB2mDecoderSupplier;
+    public Function<C, NettyB2mDecoder> getNettyB2mDecoderFactory() {
+        return nettyB2mDecoderFactory;
     }
 
-    public void setNettyB2mDecoderSupplier(Supplier<NettyB2mDecoder> nettyB2mDecoderSupplier) {
-        this.nettyB2mDecoderSupplier = nettyB2mDecoderSupplier;
+    public void setNettyB2mDecoderFactory(Function<C, NettyB2mDecoder> nettyB2mDecoderFactory) {
+        this.nettyB2mDecoderFactory = nettyB2mDecoderFactory;
     }
 
-    public Supplier<List<MessageToMessageEncoder<?>>> getNettyM2mEncoderListSupplier() {
-        return nettyM2mEncoderListSupplier;
+    public Function<C, List<MessageToMessageEncoder<?>>> getNettyM2mEncoderListFactory() {
+        return nettyM2mEncoderListFactory;
     }
 
-    public void setNettyM2mEncoderListSupplier(Supplier<List<MessageToMessageEncoder<?>>> nettyM2mEncoderListSupplier) {
-        this.nettyM2mEncoderListSupplier = nettyM2mEncoderListSupplier;
+    public void setNettyM2mEncoderListFactory(Function<C, List<MessageToMessageEncoder<?>>> nettyM2mEncoderListFactory) {
+        this.nettyM2mEncoderListFactory = nettyM2mEncoderListFactory;
     }
 
-    public Supplier<List<MessageToByteEncoder<?>>> getNettyM2bEncoderListSupplier() {
-        return nettyM2bEncoderListSupplier;
+    public Function<C, List<MessageToByteEncoder<?>>> getNettyM2bEncoderListFactory() {
+        return nettyM2bEncoderListFactory;
     }
 
-    public void setNettyM2bEncoderListSupplier(Supplier<List<MessageToByteEncoder<?>>> nettyM2bEncoderListSupplier) {
-        this.nettyM2bEncoderListSupplier = nettyM2bEncoderListSupplier;
+    public void setNettyM2bEncoderListFactory(Function<C, List<MessageToByteEncoder<?>>> nettyM2bEncoderListFactory) {
+        this.nettyM2bEncoderListFactory = nettyM2bEncoderListFactory;
     }
 
-    public Supplier<List<ChannelHandler>> getChannelHandlerListSupplier() {
-        return channelHandlerListSupplier;
+    public Function<C, List<ChannelHandler>> getChannelHandlerListFactory() {
+        return channelHandlerListFactory;
     }
 
-    public void setChannelHandlerListSupplier(Supplier<List<ChannelHandler>> channelHandlerListSupplier) {
-        this.channelHandlerListSupplier = channelHandlerListSupplier;
+    public void setChannelHandlerListFactory(Function<C, List<ChannelHandler>> channelHandlerListFactory) {
+        this.channelHandlerListFactory = channelHandlerListFactory;
     }
-
-
 }

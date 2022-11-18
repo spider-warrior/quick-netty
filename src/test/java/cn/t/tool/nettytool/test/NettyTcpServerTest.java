@@ -8,6 +8,7 @@ import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.launcher.DefaultLauncher;
 import cn.t.tool.nettytool.test.handler.TcpServerHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.logging.LogLevel;
 
 import java.util.ArrayList;
@@ -25,14 +26,14 @@ import java.util.List;
 public class NettyTcpServerTest {
     public static void main(String[] args) {
         int[] serverPorts = new int[]{18080};
-        DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
+        DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //logging
         daemonConfigBuilder.configLogLevel(LogLevel.DEBUG);
         //idle
         daemonConfigBuilder.configIdleHandler(0, 0, 10);
         //fetch message handler
-        daemonConfigBuilder.configHandler(Collections.singletonList(TcpServerHandler::new));
-        DaemonConfig daemonConfig = daemonConfigBuilder.build();
+        daemonConfigBuilder.configHandler(Collections.singletonList(ch -> new TcpServerHandler()));
+        DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer nettyChannelInitializer = new NettyTcpChannelInitializer(daemonConfig);
         List<DaemonService> daemonServerList = new ArrayList<>();
         NettyTcpServer proxyServer = new NettyTcpServer(String.format("socks5-proxy-server(%s:%s)", "127.0.0.1", Arrays.toString(serverPorts)), serverPorts, nettyChannelInitializer, new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()), false, true);

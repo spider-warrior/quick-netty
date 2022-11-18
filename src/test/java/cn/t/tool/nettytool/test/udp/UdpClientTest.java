@@ -29,7 +29,7 @@ public class UdpClientTest {
             .option(ChannelOption.SO_BROADCAST, true)
             .handler(new UdpClientHandler());
         Channel channel = bootstrap.bind(15566).sync().channel();
-        InetSocketAddress address = new InetSocketAddress("192.168.1.125", 88);
+        InetSocketAddress address = new InetSocketAddress("192.168.1.125", 5566);
 
         Scanner scanner = new Scanner(System.in);
         while (true) {

@@ -6,6 +6,7 @@ import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.test.handler.TcpClientHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.logging.LogLevel;
 
 import java.util.Collections;
@@ -20,14 +21,14 @@ import java.util.Collections;
 public class NettyTcpClientTest {
 
     public static void main(String[] args) throws Exception {
-        DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
+        DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //logging
         daemonConfigBuilder.configLogLevel(LogLevel.DEBUG);
         //idle
         daemonConfigBuilder.configIdleHandler(0, 0, 180);
         //fetch message handler
-        daemonConfigBuilder.configHandler(Collections.singletonList(TcpClientHandler::new));
-        DaemonConfig daemonConfig = daemonConfigBuilder.build();
+        daemonConfigBuilder.configHandler(Collections.singletonList(ch -> new TcpClientHandler()));
+        DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
         NettyTcpClient nettyTcpClient = new NettyTcpClient("test-client", "www.shansong.com", 80, channelInitializer, new NioEventLoopGroup(1), false, true);
         nettyTcpClient.start();
