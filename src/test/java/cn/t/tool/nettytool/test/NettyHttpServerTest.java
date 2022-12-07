@@ -10,14 +10,12 @@ import cn.t.tool.nettytool.test.handler.EventLogHandler;
 import cn.t.util.common.DateUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.logging.LogLevel;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,7 +52,9 @@ public class NettyHttpServerTest {
         daemonConfigBuilder.configHandler(factoriesList);
         DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
-        NettyTcpServer httpServer = new NettyTcpServer("http-server", new int[]{5566, 5567}, channelInitializer, new NioEventLoopGroup(Runtime.getRuntime().availableProcessors()), false, true);
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
+        EventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
+        NettyTcpServer httpServer = new NettyTcpServer("http-server", new int[]{5566, 5567}, channelInitializer, bossGroup, workerGroup, false, true);
         List<DaemonService> daemonServerList = new ArrayList<>();
         daemonServerList.add(httpServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();

@@ -6,10 +6,8 @@ import cn.t.util.common.CollectionUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +22,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
     private static final Logger logger = LoggerFactory.getLogger(NettyTcpServer.class);
 
     private NettyTcpChannelInitializer channelInitializer;
+    private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final boolean syncBind;
     private final boolean syncClose;
@@ -32,9 +31,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
 
     public void doStart() {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
         ServerBootstrap bootstrap = new ServerBootstrap();
-
         //具体配置参考io.netty.channel.ChannelConfig(for SocketChannel)和io.netty.channel.socket.ServerSocketChannelConfig(for ServerSocketChannel)说明。
 
         //ChannelOption.TCP_NODELAY
@@ -135,9 +132,10 @@ public class NettyTcpServer extends AbstractDaemonServer {
         }
     }
 
-    public NettyTcpServer(String name, int[] ports, NettyTcpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
+    public NettyTcpServer(String name, int[] ports, NettyTcpChannelInitializer channelInitializer, EventLoopGroup bossGroup, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
         super(name, ports);
         this.channelInitializer = channelInitializer;
+        this.bossGroup = bossGroup;
         this.workerGroup = workerGroup;
         this.syncBind = syncBind;
         this.syncClose = syncClose;
