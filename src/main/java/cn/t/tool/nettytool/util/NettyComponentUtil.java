@@ -22,4 +22,7 @@ public class NettyComponentUtil {
     public static <T extends ChannelHandler> void addLastHandler(ChannelPipeline channelPipeline, String handlerName, T handler) {
         channelPipeline.addBefore(HandlerNames.EXCEPTION_HANDLER, handlerName, handler);
     }
+    public static <T extends ChannelHandler> void addBeforeHandler(ChannelPipeline channelPipeline, String beforeHandlerName, String handlerName, T handler) {
+        channelPipeline.addBefore(beforeHandlerName, handlerName, handler);
+    }
 }
