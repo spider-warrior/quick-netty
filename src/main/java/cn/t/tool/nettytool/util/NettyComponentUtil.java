@@ -25,9 +25,10 @@ public class NettyComponentUtil {
     public static <T extends ChannelHandler> void addBeforeHandler(ChannelPipeline channelPipeline, String beforeHandlerName, String handlerName, T handler) {
         channelPipeline.addBefore(beforeHandlerName, handlerName, handler);
     }
-
+    public static <T extends ChannelHandler> void addAfter(ChannelPipeline channelPipeline, String afterHandlerName, String handlerName, T handler) {
+        channelPipeline.addAfter(afterHandlerName, handlerName, handler);
+    }
     public static <T extends ChannelHandler> void addFirst(ChannelPipeline channelPipeline, String handlerName, T handler) {
         channelPipeline.addFirst(handlerName, handler);
     }
-
 }
