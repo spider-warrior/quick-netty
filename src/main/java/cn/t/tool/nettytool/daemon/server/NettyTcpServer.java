@@ -11,7 +11,6 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,16 +74,20 @@ public class NettyTcpServer extends AbstractDaemonServer {
         try {
             logger.info("TCP Server: [{}] is going start", name);
             for (int port : ports) {
-                ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)f -> {
-                    if(f.isSuccess()) {
+                ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)bindAsyncFuture -> {
+                    if(bindAsyncFuture.isSuccess()) {
                         logger.info("TCP Server: {} has been started successfully, port: {}", name, port);
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {
                             for (DaemonListener listener: daemonListenerList) {
-                                listener.startup(this, f.channel());
+                                listener.startup(this, bindAsyncFuture.channel());
                             }
                         }
+                        bindAsyncFuture.channel().closeFuture().addListener((ChannelFutureListener)closeAsyncFuture -> {
+                            logger.info(String.format("TCP Server: [%s] is closed", name));
+                            callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "close");
+                        });
                     } else {
-                        logger.error(String.format("TCP Server: %s failed to start, port: %d", name, port), f.cause());
+                        callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
                     }
                 });
                 if(syncBind) {
@@ -92,34 +95,35 @@ public class NettyTcpServer extends AbstractDaemonServer {
                 }
                 serverChannelList.add(bindFuture.channel());
             }
-            List<ChannelFuture> closeFutureList = new ArrayList<>(serverChannelList.size());
-            for (Channel serverChannel : serverChannelList) {
-                ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
-                    logger.info(String.format("TCP Server: [%s] is closed, port: %d ", name, ((InetSocketAddress)serverChannel.localAddress()).getPort()));
-                    if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                        Throwable throwable = f.cause();
-                        if(throwable == null) {
-                            for (DaemonListener listener: daemonListenerList) {
-                                listener.close(this, f.channel());
-                            }
-                        } else {
-                            for (DaemonListener listener: daemonListenerList) {
-                                listener.close(this, f.channel(), throwable);
-                            }
-                        }
-                    }
-                });
-                closeFutureList.add(closeFuture);
-            }
-            for (ChannelFuture closeFuture : closeFutureList) {
-                if(syncClose) {
-                    closeFuture.sync();
+            if(syncClose) {
+                for (Channel channel : serverChannelList) {
+                    channel.closeFuture().sync();
                 }
             }
         } catch (Exception e) {
             logger.error(String.format("TCP Server: [%s] is Down", name), e);
         } finally {
             bossGroup.shutdownGracefully();
+        }
+    }
+
+    private void callListenerClose(Channel channel, Throwable cause, String stage) {
+        if(CollectionUtil.isEmpty(daemonListenerList)) {
+            if(cause == null) {
+                logger.info(String.format("TCP Server: %s close, stage: %s", name, stage));
+            } else {
+                logger.error(String.format("TCP Server: %s close, stage: %s", name, stage), cause);
+            }
+        } else {
+            if(cause == null) {
+                for (DaemonListener listener: daemonListenerList) {
+                    listener.close(this, channel);
+                }
+            } else {
+                for (DaemonListener listener: daemonListenerList) {
+                    listener.close(this, channel, cause);
+                }
+            }
         }
     }
 
