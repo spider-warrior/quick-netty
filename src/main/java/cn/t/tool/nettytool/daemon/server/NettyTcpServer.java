@@ -76,7 +76,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
             for (int port : ports) {
                 ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)bindAsyncFuture -> {
                     if(bindAsyncFuture.isSuccess()) {
-                        logger.info("TCP Server: {} has been started successfully, port: {}", name, port);
+                        logger.info("TCP Server: {} has bound successfully, port: {}", name, port);
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {
                             for (DaemonListener listener: daemonListenerList) {
                                 listener.startup(this, bindAsyncFuture.channel());
@@ -84,7 +84,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
                         }
                         bindAsyncFuture.channel().closeFuture().addListener((ChannelFutureListener)closeAsyncFuture -> {
                             logger.info(String.format("TCP Server: [%s] is closed", name));
-                            callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "close");
+                            callListenerClose(closeAsyncFuture.channel(), closeAsyncFuture.cause(), "close");
                         });
                     } else {
                         callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
