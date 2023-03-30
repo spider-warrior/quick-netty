@@ -102,8 +102,6 @@ public class NettyTcpServer extends AbstractDaemonServer {
             }
         } catch (Exception e) {
             logger.error(String.format("TCP Server: [%s] is Down", name), e);
-        } finally {
-            bossGroup.shutdownGracefully();
         }
     }
 

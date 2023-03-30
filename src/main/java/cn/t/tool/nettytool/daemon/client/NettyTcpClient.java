@@ -10,7 +10,6 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -107,10 +106,6 @@ public class NettyTcpClient extends AbstractDaemonClient {
         this.workerGroup = workerGroup;
         this.syncBind = syncBind;
         this.syncClose = syncClose;
-    }
-
-    public void setDaemonListenerList(List<DaemonListener> daemonListenerList) {
-        this.daemonListenerList = daemonListenerList;
     }
 
     public boolean sendMsg(Object msg) {
