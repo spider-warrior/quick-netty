@@ -76,7 +76,7 @@ public class DefaultLauncher extends AbstractLauncher {
             }
             while (startedDaemonServiceChannelMap.size() != 0) {
                 LockSupport.parkNanos(500000000);
-                logger.info("alive alive remain: " + startedDaemonServiceChannelMap.size());
+                logger.info("alive remain: " + startedDaemonServiceChannelMap.size() + ", instances: " + startedDaemonServiceChannelMap.values());
             }
         }
     }

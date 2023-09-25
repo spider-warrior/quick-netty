@@ -31,7 +31,8 @@ public class NettyUdpServer extends AbstractDaemonServer {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(workerGroup)
                  .channel(NioDatagramChannel.class)
-                 .option(ChannelOption.SO_BROADCAST, true);
+                 .option(ChannelOption.SO_BROADCAST, true)
+            .option(ChannelOption.SO_REUSEADDR, true);
         if(!CollectionUtil.isEmpty(attrs)) {
             for(Map.Entry<AttributeKey<?>, Object> entry: attrs.entrySet()) {
                 @SuppressWarnings("unchecked")
@@ -64,6 +65,9 @@ public class NettyUdpServer extends AbstractDaemonServer {
             for (Channel serverChannel : serverChannelList) {
                 ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                     logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, ((InetSocketAddress)serverChannel.localAddress()).getPort()));
+                    for (Channel channel : serverChannelList) {
+                        channel.close().syncUninterruptibly();
+                    }
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         Throwable throwable = f.cause();
                         if(throwable == null) {
