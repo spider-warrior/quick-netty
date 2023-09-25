@@ -65,9 +65,6 @@ public class NettyUdpServer extends AbstractDaemonServer {
             for (Channel serverChannel : serverChannelList) {
                 ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
                     logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, ((InetSocketAddress)serverChannel.localAddress()).getPort()));
-                    for (Channel channel : serverChannelList) {
-                        channel.close().syncUninterruptibly();
-                    }
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         Throwable throwable = f.cause();
                         if(throwable == null) {
