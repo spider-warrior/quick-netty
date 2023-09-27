@@ -10,7 +10,6 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +63,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
             List<ChannelFuture> closeFutureList = new ArrayList<>(serverChannelList.size());
             for (Channel serverChannel : serverChannelList) {
                 ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
-                    logger.info(String.format("UDP Server: [%s] is closed, port: %d ", name, ((InetSocketAddress)serverChannel.localAddress()).getPort()));
+                    logger.info(String.format("UDP Server: [%s] is closed ", name));
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         Throwable throwable = f.cause();
                         if(throwable == null) {
