@@ -10,6 +10,7 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,16 +44,20 @@ public class NettyUdpServer extends AbstractDaemonServer {
         try {
             logger.info("UDP Server: [{}] is going to start", name);
             for (int port : ports) {
-                ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) f -> {
-                    if(f.isSuccess()) {
-                        logger.info("UDP Server: {} has been started successfully, port: {}", name, port);
+                ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) bindAsyncFuture -> {
+                    if(bindAsyncFuture.isSuccess()) {
+                        if(port == 0) {
+                            logger.info("TCP Server: {} has bound successfully, port: {}", name, ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort());
+                        } else {
+                            logger.info("TCP Server: {} has bound successfully, port: {}", name, port);
+                        }
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {
                             for (DaemonListener listener: daemonListenerList) {
-                                listener.startup(this, f.channel());
+                                listener.startup(this, bindAsyncFuture.channel());
                             }
                         }
                     } else {
-                        logger.error(String.format("UDP Server: %s failed to start, port: %d", name, port), f.cause());
+                        logger.error(String.format("UDP Server: %s failed to start, port: %d", name, port), bindAsyncFuture.cause());
                     }
                 });
                 if(syncBind) {

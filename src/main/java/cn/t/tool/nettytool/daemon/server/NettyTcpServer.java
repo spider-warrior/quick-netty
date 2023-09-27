@@ -11,6 +11,7 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +77,11 @@ public class NettyTcpServer extends AbstractDaemonServer {
             for (int port : ports) {
                 ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)bindAsyncFuture -> {
                     if(bindAsyncFuture.isSuccess()) {
-                        logger.info("TCP Server: {} has bound successfully, port: {}", name, port);
+                        if(port == 0) {
+                            logger.info("TCP Server: {} has bound successfully, port: {}", name, ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort());
+                        } else {
+                            logger.info("TCP Server: {} has bound successfully, port: {}", name, port);
+                        }
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {
                             for (DaemonListener listener: daemonListenerList) {
                                 listener.startup(this, bindAsyncFuture.channel());
