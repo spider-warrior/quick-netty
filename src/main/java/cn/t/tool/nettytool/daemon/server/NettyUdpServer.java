@@ -41,7 +41,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
         }
         bootstrap.handler(channelInitializer);
         try {
-            logger.info("UDP Server: [{}] is going start", name);
+            logger.info("UDP Server: [{}] is going to start", name);
             for (int port : ports) {
                 ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) f -> {
                     if(f.isSuccess()) {

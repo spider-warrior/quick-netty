@@ -40,7 +40,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
             }
         }
         try {
-            logger.info("TCP Client: [{}] is going start, target: {}:{}", name, host, port);
+            logger.info("TCP Client: [{}] is going to start, target: {}:{}", name, host, port);
             ChannelFuture connectFuture = bootstrap.connect(host, port).addListener((ChannelFutureListener)connectAsyncFuture -> {
                 if(connectAsyncFuture.isSuccess()) {
                     logger.info("TCP Client: {} has been started successfully", name);

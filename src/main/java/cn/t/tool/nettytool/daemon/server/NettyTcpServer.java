@@ -72,7 +72,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
         }
         bootstrap.childHandler(channelInitializer);
         try {
-            logger.info("TCP Server: [{}] is going start", name);
+            logger.info("TCP Server: [{}] is going to start", name);
             for (int port : ports) {
                 ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)bindAsyncFuture -> {
                     if(bindAsyncFuture.isSuccess()) {
