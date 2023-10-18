@@ -14,6 +14,7 @@ import java.util.concurrent.locks.LockSupport;
 public class DefaultLauncher extends AbstractLauncher {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultLauncher.class);
+    private final HashedWheelTimer timer = new HashedWheelTimer();
     private int timeout = 10000;
     private boolean autoRestart = true;
 
@@ -41,7 +42,6 @@ public class DefaultLauncher extends AbstractLauncher {
         //故障服务器检查
         if (autoRestart && !stop) {
             logger.info("launcher config server restart: true");
-            final HashedWheelTimer timer = new HashedWheelTimer();
             final int period = 5;
             timer.newTimeout(new TimerTask() {
                 public void run(Timeout timeout) {
@@ -79,6 +79,7 @@ public class DefaultLauncher extends AbstractLauncher {
                 logger.info("alive remain: " + startedDaemonServiceChannelMap.size() + ", instances: " + startedDaemonServiceChannelMap.values());
             }
         }
+        timer.stop();
     }
 
     void setTimeout(int timeout) {
