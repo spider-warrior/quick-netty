@@ -31,7 +31,6 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
      * */
     public void startup() {
         logger.info("launcher begin to startup");
-        Runtime.getRuntime().addShutdownHook(new Thread(this::close));
         doStart();
         //回调监听器
         if (launcherListenerList != null && !launcherListenerList.isEmpty()) {
@@ -40,7 +39,9 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
                 listener.startup(this);
             }
         }
-        logger.info("launcher startup successfully");
+        if(!stop) {
+            logger.info("launcher startup successfully");
+        }
     }
 
     public abstract void doStart();
