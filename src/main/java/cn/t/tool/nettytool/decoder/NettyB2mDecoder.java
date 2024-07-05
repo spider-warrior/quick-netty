@@ -22,13 +22,13 @@ public class NettyB2mDecoder extends ByteToMessageDecoder {
             int readerIndex = in.readerIndex();
             Object msg = byteBufAnalyser.analyse(in, ctx);
             if(msg == null) {
-                logger.info("[{}: message is incomplete, reader index reset", ctx.channel().remoteAddress());
+                logger.info("[{}: message is incomplete, reader index reset", ctx.channel());
                 in.readerIndex(readerIndex);
             } else {
                 if(NullMessage.getNullMessage() == msg) {
-                    logger.info("[{}]: read a null message，reader index will not reset", ctx.channel().remoteAddress());
+                    logger.info("[{}]: read a null message，reader index will not reset", ctx.channel());
                 } else {
-                    logger.info("[{}]: decode success, type: {}", ctx.channel().remoteAddress(), msg.getClass().getSimpleName());
+                    logger.info("[{}]: decode success, type: {}", ctx.channel(), msg.getClass().getSimpleName());
                     out.add(msg);
                 }
             }
