@@ -17,7 +17,7 @@ public class NettyB2mDecoder extends ByteToMessageDecoder {
     private ByteBufAnalyser byteBufAnalyser;
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         if(in.isReadable()) {
             int readerIndex = in.readerIndex();
             Object msg = byteBufAnalyser.analyse(in, ctx);
