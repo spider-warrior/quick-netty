@@ -1,5 +1,6 @@
 package cn.t.tool.nettytool.initializer;
 
+import cn.t.tool.nettytool.analyser.ByteBufAnalyser;
 import cn.t.tool.nettytool.aware.NettyB2mDecoderAware;
 import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.decoder.NettyB2mDecoder;
@@ -39,8 +40,9 @@ public class NettyChannelInitializer<C extends Channel> extends ChannelInitializ
                 channelPipeline.addLast(IDLE_HANDLER, daemonConfig.getIdleStateHandlerFactory().apply(ch));
             }
             // b2m decoder
-            if(daemonConfig.getNettyB2mDecoderFactory() != null) {
-                channelPipeline.addLast(MSG_DECODER, daemonConfig.getNettyB2mDecoderFactory().apply(ch));
+            if(daemonConfig.getNettyByteBufAnalyserFactory() != null) {
+                ByteBufAnalyser byteBufAnalyser = daemonConfig.getNettyByteBufAnalyserFactory().apply(ch);
+                channelPipeline.addLast(MSG_DECODER, new NettyB2mDecoder(byteBufAnalyser));
             }
             // m2b encoder
             if(daemonConfig.getNettyM2bEncoderListFactory() != null) {

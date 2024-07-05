@@ -1,5 +1,6 @@
 package cn.t.tool.nettytool.daemon;
 
+import cn.t.tool.nettytool.analyser.ByteBufAnalyser;
 import cn.t.tool.nettytool.decoder.NettyB2mDecoder;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -18,7 +19,7 @@ public class DaemonConfig<C extends Channel> {
     private LogLevel loggingHandlerLogLevel;
     private InternalLoggerFactory internalLoggerFactory = Slf4JLoggerFactory.INSTANCE;
     private Function<C, IdleStateHandler> idleStateHandlerFactory;
-    private Function<C, NettyB2mDecoder> nettyB2mDecoderFactory;
+    private Function<C, ByteBufAnalyser> nettyByteBufAnalyserFactory;
     private Function<C, List<MessageToMessageDecoder<?>>> nettyM2mDecoderFactory;
     private Function<C, List<MessageToMessageEncoder<?>>> nettyM2mEncoderListFactory;
     private Function<C, List<MessageToByteEncoder<?>>> nettyM2bEncoderListFactory;
@@ -48,12 +49,12 @@ public class DaemonConfig<C extends Channel> {
         this.idleStateHandlerFactory = idleStateHandlerFactory;
     }
 
-    public Function<C, NettyB2mDecoder> getNettyB2mDecoderFactory() {
-        return nettyB2mDecoderFactory;
+    public Function<C, ByteBufAnalyser> getNettyByteBufAnalyserFactory() {
+        return nettyByteBufAnalyserFactory;
     }
 
-    public void setNettyB2mDecoderFactory(Function<C, NettyB2mDecoder> nettyB2mDecoderFactory) {
-        this.nettyB2mDecoderFactory = nettyB2mDecoderFactory;
+    public void setNettyByteBufAnalyserFactory(Function<C, ByteBufAnalyser> nettyByteBufAnalyserFactory) {
+        this.nettyByteBufAnalyserFactory = nettyByteBufAnalyserFactory;
     }
 
     public Function<C, List<MessageToMessageDecoder<?>>> getNettyM2mDecoderFactory() {
