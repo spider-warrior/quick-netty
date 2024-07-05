@@ -43,7 +43,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
             logger.info("TCP Client: [{}] is going to start, target: {}:{}", name, host, port);
             ChannelFuture connectFuture = bootstrap.connect(host, port).addListener((ChannelFutureListener)connectAsyncFuture -> {
                 if(connectAsyncFuture.isSuccess()) {
-                    logger.info("TCP Client: {} has been started successfully", name);
+                    logger.info("TCP Client: [{}] has been started successfully", name);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         for (DaemonListener listener : daemonListenerList) {
                             listener.startup(this, connectAsyncFuture.channel());
@@ -72,9 +72,9 @@ public class NettyTcpClient extends AbstractDaemonClient {
     private void callListenerClose(Channel channel, Throwable cause, String stage) {
         if(CollectionUtil.isEmpty(daemonListenerList)) {
             if(cause == null) {
-                logger.info(String.format("TCP Client: %s close, stage: %s target address: [%s:%d]", name, stage, host, port));
+                logger.info(String.format("TCP Client: [%s] close, stage: %s target address: [%s:%d]", name, stage, host, port));
             } else {
-                logger.error(String.format("TCP Client: %s close, stage: %s target address: [%s:%d]", name, stage, host, port), cause);
+                logger.error(String.format("TCP Client: [%s] close, stage: %s target address: [%s:%d]", name, stage, host, port), cause);
             }
         } else {
             if(cause == null) {

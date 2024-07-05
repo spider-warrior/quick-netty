@@ -78,9 +78,9 @@ public class NettyTcpServer extends AbstractDaemonServer {
                 ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)bindAsyncFuture -> {
                     if(bindAsyncFuture.isSuccess()) {
                         if(port == 0) {
-                            logger.info("TCP Server: {} has bound successfully, port: {}", name, ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort());
+                            logger.info("TCP Server: [{}] has bound successfully, port: {}", name, ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort());
                         } else {
-                            logger.info("TCP Server: {} has bound successfully, port: {}", name, port);
+                            logger.info("TCP Server: [{}] has bound successfully, port: {}", name, port);
                         }
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {
                             for (DaemonListener listener: daemonListenerList) {
@@ -88,7 +88,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
                             }
                         }
                         bindAsyncFuture.channel().closeFuture().addListener((ChannelFutureListener)closeAsyncFuture -> {
-                            logger.info(String.format("TCP Server: [%s] is closed", name));
+                            logger.info(String.format("TCP [Server]: [%s] is closed", name));
                             callListenerClose(closeAsyncFuture.channel(), closeAsyncFuture.cause(), "close");
                         });
                     } else {
@@ -113,9 +113,9 @@ public class NettyTcpServer extends AbstractDaemonServer {
     private void callListenerClose(Channel channel, Throwable cause, String stage) {
         if(CollectionUtil.isEmpty(daemonListenerList)) {
             if(cause == null) {
-                logger.info(String.format("TCP Server: %s close, stage: %s", name, stage));
+                logger.info(String.format("TCP Server: [%s] close, stage: %s", name, stage));
             } else {
-                logger.error(String.format("TCP Server: %s close, stage: %s", name, stage), cause);
+                logger.error(String.format("TCP Server: [%s] close, stage: %s", name, stage), cause);
             }
         } else {
             if(cause == null) {

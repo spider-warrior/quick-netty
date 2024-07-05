@@ -1,13 +1,12 @@
 package cn.t.tool.nettytool.initializer;
 
 import cn.t.tool.nettytool.analyser.ByteBufAnalyser;
-import cn.t.tool.nettytool.aware.NettyB2mDecoderAware;
 import cn.t.tool.nettytool.daemon.DaemonConfig;
-import cn.t.tool.nettytool.decoder.NettyB2mDecoder;
 import cn.t.util.common.CollectionUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -21,20 +20,6 @@ import java.util.function.Function;
 public class DaemonConfigBuilder<C extends Channel> {
 
     private final DaemonConfig<C> daemonConfig = new DaemonConfig<>();
-
-    public DaemonConfigBuilder<C> configByteBufAnalyser(Function<C, ? extends ByteBufAnalyser> byteBufAnalyserFactory) {
-        if(byteBufAnalyserFactory != null) {
-            daemonConfig.setNettyByteBufAnalyserFactory(ch -> {
-                ByteBufAnalyser byteBufAnalyser = byteBufAnalyserFactory.apply(ch);
-                NettyB2mDecoder nettyB2mDecoder = new NettyB2mDecoder(byteBufAnalyser);
-                if(byteBufAnalyser instanceof NettyB2mDecoderAware) {
-                    ((NettyB2mDecoderAware)byteBufAnalyser).setNettyB2mDecoder(nettyB2mDecoder);
-                }
-                return byteBufAnalyser;
-            });
-        }
-        return this;
-    }
 
     public DaemonConfigBuilder<C> configLogLevel(LogLevel logLevel) {
         if(logLevel != null) {
@@ -55,12 +40,19 @@ public class DaemonConfigBuilder<C extends Channel> {
         return this;
     }
 
-    public DaemonConfigBuilder<C> configM2mEncoder(List<Function<C, MessageToMessageEncoder<?>>> factoriesList) {
+    public DaemonConfigBuilder<C> configByteBufAnalyser(Function<C, ? extends ByteBufAnalyser> byteBufAnalyserFactory) {
+        if(byteBufAnalyserFactory != null) {
+            daemonConfig.setNettyByteBufAnalyserFactory(byteBufAnalyserFactory::apply);
+        }
+        return this;
+    }
+
+    public DaemonConfigBuilder<C> configM2mDecoder(List<Function<C, MessageToMessageDecoder<?>>> factoriesList) {
         if(!CollectionUtil.isEmpty(factoriesList)) {
-            daemonConfig.setNettyM2mEncoderListFactory(ch -> {
-                List<MessageToMessageEncoder<?>> nettyTcpEncoderList = new ArrayList<>();
-                factoriesList.forEach(factory -> nettyTcpEncoderList.add(factory.apply(ch)));
-                return nettyTcpEncoderList;
+            daemonConfig.setNettyM2mDecoderFactory(ch -> {
+                List<MessageToMessageDecoder<?>> nettyTcpDecoderList = new ArrayList<>(factoriesList.size());
+                factoriesList.forEach(factory -> nettyTcpDecoderList.add(factory.apply(ch)));
+                return nettyTcpDecoderList;
             });
         }
         return this;
@@ -69,7 +61,18 @@ public class DaemonConfigBuilder<C extends Channel> {
     public DaemonConfigBuilder<C> configM2bEncoder(List<Function<C, ? extends MessageToByteEncoder<?>>> factoriesList) {
         if(!CollectionUtil.isEmpty(factoriesList)) {
             daemonConfig.setNettyM2bEncoderListFactory(ch -> {
-                List<MessageToByteEncoder<?>> nettyTcpEncoderList = new ArrayList<>();
+                List<MessageToByteEncoder<?>> nettyTcpEncoderList = new ArrayList<>(factoriesList.size());
+                factoriesList.forEach(factory -> nettyTcpEncoderList.add(factory.apply(ch)));
+                return nettyTcpEncoderList;
+            });
+        }
+        return this;
+    }
+
+    public DaemonConfigBuilder<C> configM2mEncoder(List<Function<C, MessageToMessageEncoder<?>>> factoriesList) {
+        if(!CollectionUtil.isEmpty(factoriesList)) {
+            daemonConfig.setNettyM2mEncoderListFactory(ch -> {
+                List<MessageToMessageEncoder<?>> nettyTcpEncoderList = new ArrayList<>(factoriesList.size());
                 factoriesList.forEach(factory -> nettyTcpEncoderList.add(factory.apply(ch)));
                 return nettyTcpEncoderList;
             });
@@ -80,7 +83,7 @@ public class DaemonConfigBuilder<C extends Channel> {
     public DaemonConfigBuilder<C> configHandler(List<Function<C, ? extends ChannelHandler>> factoriesList) {
         if(!CollectionUtil.isEmpty(factoriesList)) {
             daemonConfig.setChannelHandlerListFactory(ch -> {
-                List<ChannelHandler> handlerList = new ArrayList<>();
+                List<ChannelHandler> handlerList = new ArrayList<>(factoriesList.size());
                 factoriesList.forEach(factory -> handlerList.add(factory.apply(ch)));
                 return handlerList;
             });

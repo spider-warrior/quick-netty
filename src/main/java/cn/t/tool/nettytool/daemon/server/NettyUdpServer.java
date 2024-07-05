@@ -47,9 +47,9 @@ public class NettyUdpServer extends AbstractDaemonServer {
                 ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) bindAsyncFuture -> {
                     if(bindAsyncFuture.isSuccess()) {
                         if(port == 0) {
-                            logger.info("UDP Server: {} has bound successfully, port: {}", name, ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort());
+                            logger.info("UDP Server: [{}] has bound successfully, port: {}", name, ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort());
                         } else {
-                            logger.info("UDP Server: {} has bound successfully, port: {}", name, port);
+                            logger.info("UDP Server: [{}] has bound successfully, port: {}", name, port);
                         }
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {
                             for (DaemonListener listener: daemonListenerList) {
@@ -57,7 +57,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
                             }
                         }
                     } else {
-                        logger.error(String.format("UDP Server: %s failed to start, port: %d", name, port), bindAsyncFuture.cause());
+                        logger.error(String.format("UDP Server: [%s] failed to start, port: %d", name, port), bindAsyncFuture.cause());
                     }
                 });
                 if(syncBind) {
