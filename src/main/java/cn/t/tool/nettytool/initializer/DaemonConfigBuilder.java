@@ -24,13 +24,13 @@ public class DaemonConfigBuilder<C extends Channel> {
 
     public DaemonConfigBuilder<C> configByteBufAnalyser(Function<C, ? extends ByteBufAnalyser> byteBufAnalyserFactory) {
         if(byteBufAnalyserFactory != null) {
-            daemonConfig.setNettyB2mDecoderFactory(ch -> {
+            daemonConfig.setNettyByteBufAnalyserFactory(ch -> {
                 ByteBufAnalyser byteBufAnalyser = byteBufAnalyserFactory.apply(ch);
                 NettyB2mDecoder nettyB2mDecoder = new NettyB2mDecoder(byteBufAnalyser);
                 if(byteBufAnalyser instanceof NettyB2mDecoderAware) {
                     ((NettyB2mDecoderAware)byteBufAnalyser).setNettyB2mDecoder(nettyB2mDecoder);
                 }
-                return nettyB2mDecoder;
+                return byteBufAnalyser;
             });
         }
         return this;
