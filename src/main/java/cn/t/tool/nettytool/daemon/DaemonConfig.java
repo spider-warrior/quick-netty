@@ -4,6 +4,7 @@ import cn.t.tool.nettytool.decoder.NettyB2mDecoder;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -18,6 +19,7 @@ public class DaemonConfig<C extends Channel> {
     private InternalLoggerFactory internalLoggerFactory = Slf4JLoggerFactory.INSTANCE;
     private Function<C, IdleStateHandler> idleStateHandlerFactory;
     private Function<C, NettyB2mDecoder> nettyB2mDecoderFactory;
+    private Function<C, List<MessageToMessageDecoder<?>>> nettyM2mDecoderFactory;
     private Function<C, List<MessageToMessageEncoder<?>>> nettyM2mEncoderListFactory;
     private Function<C, List<MessageToByteEncoder<?>>> nettyM2bEncoderListFactory;
     private Function<C, List<ChannelHandler>> channelHandlerListFactory;
@@ -52,6 +54,14 @@ public class DaemonConfig<C extends Channel> {
 
     public void setNettyB2mDecoderFactory(Function<C, NettyB2mDecoder> nettyB2mDecoderFactory) {
         this.nettyB2mDecoderFactory = nettyB2mDecoderFactory;
+    }
+
+    public Function<C, List<MessageToMessageDecoder<?>>> getNettyM2mDecoderFactory() {
+        return nettyM2mDecoderFactory;
+    }
+
+    public void setNettyM2mDecoderFactory(Function<C, List<MessageToMessageDecoder<?>>> nettyM2mDecoderFactory) {
+        this.nettyM2mDecoderFactory = nettyM2mDecoderFactory;
     }
 
     public Function<C, List<MessageToMessageEncoder<?>>> getNettyM2mEncoderListFactory() {

@@ -1,8 +1,8 @@
 package cn.t.tool.nettytool.launcher;
 
+import cn.t.tool.nettytool.constants.TaskConstants;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.ListenableDaemonService;
-import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
 import org.slf4j.Logger;
@@ -14,7 +14,6 @@ import java.util.concurrent.locks.LockSupport;
 public class DefaultLauncher extends AbstractLauncher {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultLauncher.class);
-    private final HashedWheelTimer timer = new HashedWheelTimer();
     private int timeout = 10000;
     private boolean autoRestart = true;
 
@@ -43,7 +42,7 @@ public class DefaultLauncher extends AbstractLauncher {
         if (autoRestart && !stop) {
             logger.info("launcher config server restart: true");
             final int period = 5;
-            timer.newTimeout(new TimerTask() {
+            TaskConstants.timer.newTimeout(new TimerTask() {
                 public void run(Timeout timeout) {
                     logger.info("monitor down server....");
                     if (downDaemonService.size() > 0) {
@@ -55,14 +54,14 @@ public class DefaultLauncher extends AbstractLauncher {
                         }
                     }
                     if (!stop) {
-                        timer.newTimeout(this, period, TimeUnit.SECONDS);
+                        TaskConstants.timer.newTimeout(this, period, TimeUnit.SECONDS);
                     }
                     else {
                         logger.info("server health check monitor stop....");
                     }
                 }
             }, period, TimeUnit.SECONDS);
-            timer.start();
+            TaskConstants.timer.start();
         }
 
     }
@@ -79,7 +78,7 @@ public class DefaultLauncher extends AbstractLauncher {
                 logger.info("alive remain: " + startedDaemonServiceChannelMap.size() + ", instances: " + startedDaemonServiceChannelMap.values());
             }
         }
-        timer.stop();
+        TaskConstants.timer.stop();
     }
 
     void setTimeout(int timeout) {

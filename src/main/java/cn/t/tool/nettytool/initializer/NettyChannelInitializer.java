@@ -11,6 +11,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -43,14 +44,21 @@ public class NettyChannelInitializer<C extends Channel> extends ChannelInitializ
             }
             // m2b encoder
             if(daemonConfig.getNettyM2bEncoderListFactory() != null) {
-                List<MessageToByteEncoder<?>>nettyTcpEncoderList = daemonConfig.getNettyM2bEncoderListFactory().apply(ch);
+                List<MessageToByteEncoder<?>> nettyTcpEncoderList = daemonConfig.getNettyM2bEncoderListFactory().apply(ch);
                 if(!CollectionUtil.isEmpty(nettyTcpEncoderList)) {
                     nettyTcpEncoderList.forEach(encoder -> channelPipeline.addLast(ENCODER_PREFIX + encoder.getClass().getName(), encoder));
                 }
             }
+            // m2m decoder
+            if(daemonConfig.getNettyM2mDecoderFactory() != null) {
+                List<MessageToMessageDecoder<?>> nettyM2mDecoderList = daemonConfig.getNettyM2mDecoderFactory().apply(ch);
+                if(!CollectionUtil.isEmpty(nettyM2mDecoderList)) {
+                    nettyM2mDecoderList.forEach(decoder -> channelPipeline.addLast(DECODER_PREFIX + decoder.getClass().getName(), decoder));
+                }
+            }
             // m2m encoder
             if(daemonConfig.getNettyM2mEncoderListFactory() != null) {
-                List<MessageToMessageEncoder<?>>nettyTcpEncoderList = daemonConfig.getNettyM2mEncoderListFactory().apply(ch);
+                List<MessageToMessageEncoder<?>> nettyTcpEncoderList = daemonConfig.getNettyM2mEncoderListFactory().apply(ch);
                 if(!CollectionUtil.isEmpty(nettyTcpEncoderList)) {
                     nettyTcpEncoderList.forEach(encoder -> channelPipeline.addLast(ENCODER_PREFIX + encoder.getClass().getName(), encoder));
                 }
