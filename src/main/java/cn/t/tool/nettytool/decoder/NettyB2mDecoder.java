@@ -18,12 +18,13 @@ public class NettyB2mDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        if(in.isReadable()) {
+        while (in.isReadable()) {
             int readerIndex = in.readerIndex();
             Object msg = byteBufAnalyser.analyse(in, ctx);
             if(msg == null) {
                 logger.debug("[{}: message is incomplete, reader index reset", ctx.channel());
                 in.readerIndex(readerIndex);
+                break;
             } else {
                 if(NullMessage.getNullMessage() == msg) {
                     logger.debug("[{}]: read a null message，reader index will not reset", ctx.channel());
