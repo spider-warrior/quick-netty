@@ -43,13 +43,16 @@ public class NettyUdpServer extends AbstractDaemonServer {
         bootstrap.handler(channelInitializer);
         try {
             logger.info("UDP Server: [{}] is going to start", name);
-            for (int port : ports) {
-                ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) bindAsyncFuture -> {
+            for (int i=0; i<ports.length; i++) {
+                int index = i;
+                ChannelFuture bindFuture = bootstrap.bind(ports[index]).addListener((ChannelFutureListener) bindAsyncFuture -> {
                     if(bindAsyncFuture.isSuccess()) {
-                        if(port == 0) {
-                            logger.info("UDP Server: [{}] has bound successfully, port: {}", name, ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort());
+                        if(ports[index] == 0) {
+                            int actualBindPort = ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort();
+                            actualBindPorts[index] = actualBindPort;
+                            logger.info("UDP Server: [{}] has bound successfully, port: {}", name, actualBindPort);
                         } else {
-                            logger.info("UDP Server: [{}] has bound successfully, port: {}", name, port);
+                            logger.info("UDP Server: [{}] has bound successfully, port: {}", name, ports[index]);
                         }
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {
                             for (DaemonListener listener: daemonListenerList) {
@@ -57,7 +60,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
                             }
                         }
                     } else {
-                        logger.error(String.format("UDP Server: [%s] failed to start, port: %d", name, port), bindAsyncFuture.cause());
+                        logger.error(String.format("UDP Server: [%s] failed to start, port: %d", name, ports[index]), bindAsyncFuture.cause());
                     }
                 });
                 if(syncBind) {
