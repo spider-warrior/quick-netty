@@ -52,6 +52,7 @@ public class NettyUdpServer extends AbstractDaemonServer {
                             actualBindPorts[index] = actualBindPort;
                             logger.info("UDP Server: [{}] has bound successfully, port: {}", name, actualBindPort);
                         } else {
+                            actualBindPorts[index] = ports[index];
                             logger.info("UDP Server: [{}] has bound successfully, port: {}", name, ports[index]);
                         }
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {

@@ -83,6 +83,7 @@ public class NettyTcpServer extends AbstractDaemonServer {
                             actualBindPorts[index] = actualBindPort;
                             logger.info("TCP Server: [{}] has bound successfully, port: {}", name, actualBindPort);
                         } else {
+                            actualBindPorts[index] = ports[index];
                             logger.info("TCP Server: [{}] has bound successfully, port: {}", name, ports[index]);
                         }
                         if (!CollectionUtil.isEmpty(daemonListenerList)) {
