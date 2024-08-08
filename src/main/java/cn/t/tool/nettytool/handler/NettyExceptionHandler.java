@@ -17,7 +17,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Uncaught exceptions from inbound handlers will propagate up to this handler
-        logger.error("[{} -> {}]: 读取消息异常, 即将关闭连接, 异常类型: {}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), cause.getClass(), cause);
+        logger.error("[{} -> {}]: 读取消息异常, 即将关闭连接, 异常: {}, 异常消息: {}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), cause.getClass().getSimpleName(), ExceptionUtil.getErrorMessage(cause));
         ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
 
@@ -26,7 +26,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
         ctx.connect(remoteAddress, localAddress, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 // Handle connect exception here...
-                logger.error("连接失败: [{}]\r\n{}", remoteAddress, ExceptionUtil.getStackTrace(future.cause()));
+                logger.error("连接失败: [{}]\r\n{}", remoteAddress, ExceptionUtil.getErrorMessage(future.cause()));
             }
         }));
     }
@@ -36,7 +36,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
         ctx.write(msg, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 // Handle write exception here...
-                logger.error("[{}] -> [{}]: 写出消息异常,\r\n{}", ctx.channel().localAddress(), ctx.channel().remoteAddress(), ExceptionUtil.getStackTrace(future.cause()));
+                logger.error("[{}] -> [{}]: 写出消息异常,\r\n{}", ctx.channel().localAddress(), ctx.channel().remoteAddress(), ExceptionUtil.getErrorMessage(future.cause()));
             }
         }));
     }
