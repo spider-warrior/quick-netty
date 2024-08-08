@@ -26,7 +26,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
         ctx.connect(remoteAddress, localAddress, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 // Handle connect exception here...
-                logger.error("连接失败: [{}]\r\n{}", remoteAddress, ExceptionUtil.getErrorMessage(future.cause()));
+                logger.error("连接失败: [{}], {}", remoteAddress, ExceptionUtil.getErrorMessage(future.cause()));
             }
         }));
     }
@@ -36,7 +36,7 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
         ctx.write(msg, promise.addListener((ChannelFutureListener) future -> {
             if (!future.isSuccess()) {
                 // Handle write exception here...
-                logger.error("[{}] -> [{}]: 写出消息异常,\r\n{}", ctx.channel().localAddress(), ctx.channel().remoteAddress(), ExceptionUtil.getErrorMessage(future.cause()));
+                logger.error("[{}] -> [{}]: 写出消息异常, {}", ctx.channel().localAddress(), ctx.channel().remoteAddress(), ExceptionUtil.getErrorMessage(future.cause()));
             }
         }));
     }
