@@ -18,7 +18,10 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Uncaught exceptions from inbound handlers will propagate up to this handler
         logger.error("[{} -> {}]: 读取消息异常, 即将关闭连接, 异常: {}, 异常消息: {}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), cause.getClass().getSimpleName(), ExceptionUtil.getErrorMessage(cause));
-        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        if (ctx.channel().isOpen()) {
+            ctx.flush();
+        }
+        ctx.close();
     }
 
     @Override
@@ -70,17 +73,26 @@ public class NettyExceptionHandler extends ChannelDuplexHandler {
 
     protected void handleReaderIdle(ChannelHandlerContext ctx) {
         logger.warn("[{} -> {}]: 读取超时,断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
-        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        if (ctx.channel().isOpen()) {
+            ctx.flush();
+        }
+        ctx.close();
     }
 
     protected void handleWriterIdle(ChannelHandlerContext ctx) {
         logger.warn("[{} -> {}]: 写出超时,断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
-        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        if (ctx.channel().isOpen()) {
+            ctx.flush();
+        }
+        ctx.close();
     }
 
     protected void handleAllIdle(ChannelHandlerContext ctx) {
         logger.warn("[{} <-> {}]: 读取或写出超时,断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
-        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        if (ctx.channel().isOpen()) {
+            ctx.flush();
+        }
+        ctx.close();
     }
 
     // ... override more outbound methods to handle their exceptions as well

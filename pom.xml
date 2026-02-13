@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>cn.t</groupId>
-        <artifactId>parent-lib-pom</artifactId>
-        <version>2.0.0-SNAPSHOT</version>
+        <groupId>com.uniform</groupId>
+        <artifactId>uniform-version-common</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath/>
     </parent>
     <artifactId>quick-netty</artifactId>
@@ -17,6 +17,7 @@
         <dependency>
             <groupId>cn.t</groupId>
             <artifactId>common-util</artifactId>
+            <version>1.0.20-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
