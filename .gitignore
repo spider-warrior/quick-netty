@@ -5,3 +5,4 @@ target
 *.setting
 *.log
 .flattened-pom.xml
+.claude
