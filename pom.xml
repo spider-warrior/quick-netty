@@ -10,6 +10,7 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath/>
     </parent>
+    <groupId>cn.t</groupId>
     <artifactId>quick-netty</artifactId>
     <version>1.0.6-SNAPSHOT</version>
 
