@@ -22,7 +22,6 @@ public abstract class AbstractDaemonClient extends ListenableDaemonService {
     public void close() {
         logger.debug("client: {} is going to stop", name);
         doClose();
-        logger.debug("client: {} is stopped", name);
     }
 
     /**

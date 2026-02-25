@@ -19,7 +19,6 @@ public class NettyTcpClient extends AbstractDaemonClient {
 
     private final ChannelInitializer<SocketChannel> channelInitializer;
     private final EventLoopGroup workerGroup;
-    private final boolean syncBind;
     private final boolean syncClose;
     private Channel channel;
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
@@ -43,7 +42,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
             logger.info("TCP Client: [{}] is going to start, target: {}:{}", name, host, port);
             ChannelFuture connectFuture = bootstrap.connect(host, port).addListener((ChannelFutureListener)connectAsyncFuture -> {
                 if(connectAsyncFuture.isSuccess()) {
-                    logger.info("TCP Client: [{}] has been started successfully", name);
+                    logger.info("TCP Client: [{}] success connect to remote server {}:{}", name, host, port);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
                         for (DaemonListener listener : daemonListenerList) {
                             listener.startup(this, connectAsyncFuture.channel());
@@ -54,27 +53,28 @@ public class NettyTcpClient extends AbstractDaemonClient {
                         callListenerClose(closeAsyncFuture.channel(), closeAsyncFuture.cause(), "close");
                     });
                 } else {
+                    logger.error("TCP Client: [{}] failed to connect remote server {}:{}", name, host, port, connectAsyncFuture.cause());
                     callListenerClose(connectAsyncFuture.channel(), connectAsyncFuture.cause(), "connect");
                 }
             });
-            if(syncBind) {
-                connectFuture.sync();
-            }
             channel = connectFuture.channel();
             if(syncClose) {
+                logger.info("TCP Client: [{}] is going to sync close", name);
                 channel.closeFuture().sync();
             }
         } catch (Exception e) {
-            logger.error(String.format("TCP Client: [%s] is Down", name), e);
+            logger.error("TCP Client: [{}] failed to start", name, e);
+        } finally {
+            logger.error("TCP Server: [{}] is Down", name);
         }
     }
 
     private void callListenerClose(Channel channel, Throwable cause, String stage) {
         if(CollectionUtil.isEmpty(daemonListenerList)) {
             if(cause == null) {
-                logger.info(String.format("TCP Client: [%s] close, stage: %s target address: [%s:%d]", name, stage, host, port));
+                logger.info("TCP Client: [{}] close, stage: {} target address: [{}:{}]", name, stage, host, port);
             } else {
-                logger.error(String.format("TCP Client: [%s] close, stage: %s target address: [%s:%d]", name, stage, host, port), cause);
+                logger.error("TCP Client: [{}] close, stage: {} target address: [{}:{}]", name, stage, host, port, cause);
             }
         } else {
             if(cause == null) {
@@ -90,7 +90,7 @@ public class NettyTcpClient extends AbstractDaemonClient {
     }
 
     private boolean isOpen() {
-        return channel != null && channel.isOpen();
+        return channel != null && channel.isActive();
     }
 
     @Override
@@ -100,11 +100,10 @@ public class NettyTcpClient extends AbstractDaemonClient {
         }
     }
 
-    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
+    public NettyTcpClient(String name, String host, int port, ChannelInitializer<SocketChannel> channelInitializer, EventLoopGroup workerGroup, boolean syncClose) {
         super(name, host, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
-        this.syncBind = syncBind;
         this.syncClose = syncClose;
     }
 
