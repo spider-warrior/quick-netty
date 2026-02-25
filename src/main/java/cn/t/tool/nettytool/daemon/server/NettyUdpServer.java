@@ -69,8 +69,6 @@ public class NettyUdpServer extends AbstractDaemonServer {
             }
         } catch (Exception e) {
             logger.error("UDP Server: [{}] failed to start", name, e);
-        } finally {
-            logger.error("UDP Server: [{}] is Down", name);
         }
     }
 

@@ -100,8 +100,6 @@ public class NettyTcpServer extends AbstractDaemonServer {
             }
         } catch (Exception e) {
             logger.error("TCP Server: [{}] failed to start", name, e);
-        } finally {
-            logger.error("TCP Server: [{}] is Down", name);
         }
     }
 
