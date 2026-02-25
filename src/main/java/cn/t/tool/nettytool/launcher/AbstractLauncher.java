@@ -34,7 +34,7 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
         doStart();
         //回调监听器
         if (launcherListenerList != null && !launcherListenerList.isEmpty()) {
-            logger.info(String.format("launcher listener size: %d, begin to call launcher listeners", launcherListenerList.size()));
+            logger.info("launcher listener size: {}, begin to call launcher listeners", launcherListenerList.size());
             for (LauncherListener listener: launcherListenerList) {
                 listener.startup(this);
             }
@@ -87,7 +87,7 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
             List<Channel> channelList = startedDaemonServiceChannelMap.computeIfAbsent(server, k -> new Vector<>(1));
             channelList.add(channel);
         }
-        logger.info("server alive count: " + startedDaemonServiceChannelMap.size());
+        logger.info("server alive count: {}", startedDaemonServiceChannelMap.size());
     }
 
     @Override
@@ -95,7 +95,7 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
         synchronized (server) {
             List<Channel> channelList = startedDaemonServiceChannelMap.get(server);
             channelList.remove(channel);
-            if(channelList.size() == 0) {
+            if(channelList.isEmpty()) {
                 startedDaemonServiceChannelMap.remove(server);
                 downDaemonService.add(server);
             }

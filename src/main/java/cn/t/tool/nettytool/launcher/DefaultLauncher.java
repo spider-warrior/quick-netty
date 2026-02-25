@@ -20,7 +20,7 @@ public class DefaultLauncher extends AbstractLauncher {
     public void doStart() {
         //启动所有服务器
         if (getDaemonServiceList() != null && !getDaemonServiceList().isEmpty()) {
-            logger.info(String.format("server list size: %d", getDaemonServiceList().size()));
+            logger.info("server list size: {}", getDaemonServiceList().size());
             long before = System.currentTimeMillis();
             for (final DaemonService service: getDaemonServiceList()) {
                 if(service instanceof ListenableDaemonService) {
@@ -45,11 +45,11 @@ public class DefaultLauncher extends AbstractLauncher {
             TaskConstants.timer.newTimeout(new TimerTask() {
                 public void run(Timeout timeout) {
                     logger.info("monitor down server....");
-                    if (downDaemonService.size() > 0) {
-                        logger.info(stop + ", find down server, size: " + downDaemonService.size());
-                        while (downDaemonService.size() > 0 && !stop) {
-                            DaemonService daemonService = downDaemonService.remove(0);
-                            logger.info("server restarting: " + daemonService);
+                    if (!downDaemonService.isEmpty()) {
+                        logger.info("{}, find down server, size: {}", stop, downDaemonService.size());
+                        while (!downDaemonService.isEmpty() && !stop) {
+                            DaemonService daemonService = downDaemonService.removeFirst();
+                            logger.info("server restarting: {}", daemonService);
                             startServer(daemonService);
                         }
                     }
@@ -73,9 +73,9 @@ public class DefaultLauncher extends AbstractLauncher {
             for (DaemonService server: getDaemonServiceList()) {
                 server.close();
             }
-            while (startedDaemonServiceChannelMap.size() != 0) {
+            while (!startedDaemonServiceChannelMap.isEmpty()) {
                 LockSupport.parkNanos(500000000);
-                logger.info("alive remain: " + startedDaemonServiceChannelMap.size() + ", instances: " + startedDaemonServiceChannelMap.values());
+                logger.info("alive remain: {}, instances: {}", startedDaemonServiceChannelMap.size(), startedDaemonServiceChannelMap.values());
             }
         }
         TaskConstants.timer.stop();
