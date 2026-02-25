@@ -89,16 +89,19 @@ public class NettyTcpServer extends AbstractDaemonServer {
                         callListenerClose(closeAsyncFuture.channel(), closeAsyncFuture.cause(), "close");
                     });
                 } else {
-                    logger.error("TCP Server: [{}] failed to start, port: {}", name, port, bindAsyncFuture.cause());
+                    logger.error("TCP Server: [{}] failed to bind port: {}", name, port, bindAsyncFuture.cause());
                     callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
                 }
             });
             serverChannel = bindFuture.channel();
             if(syncClose) {
+                logger.info("TCP Server: [{}] is going to sync close", name);
                 serverChannel.closeFuture().sync();
             }
         } catch (Exception e) {
-            logger.error("TCP Server: [{}] is Down", name, e);
+            logger.error("TCP Server: [{}] failed to start", name, e);
+        } finally {
+            logger.error("TCP Server: [{}] is Down", name);
         }
     }
 

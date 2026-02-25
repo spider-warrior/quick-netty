@@ -15,14 +15,12 @@ public abstract class AbstractDaemonServer extends ListenableDaemonService {
     public final void start() {
         logger.debug("server: {} is going to start", name);
         doStart();
-        logger.debug("server: {} is started", name);
     }
 
     @Override
     public final void close() {
         logger.debug("server: {} is going to stop", name);
         doClose();
-        logger.debug("server: {} is stopped", name);
     }
 
     public abstract void doStart();

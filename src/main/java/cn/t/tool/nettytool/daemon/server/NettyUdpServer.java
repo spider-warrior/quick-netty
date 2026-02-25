@@ -58,16 +58,19 @@ public class NettyUdpServer extends AbstractDaemonServer {
                         callListenerClose(closeAsyncFuture.channel(), closeAsyncFuture.cause(), "close");
                     });
                 } else {
-                    logger.error("UDP Server: [{}] failed to start, port: {}", name, port, bindAsyncFuture.cause());
+                    logger.error("UDP Server: [{}] failed to bind port: {}", name, port, bindAsyncFuture.cause());
                     callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
                 }
             });
             serverChannel = bindFuture.channel();
             if(syncClose) {
+                logger.info("UDP Server: [{}] is going to sync close", name);
                 serverChannel.closeFuture().sync();
             }
         } catch (Exception e) {
-            logger.error("UDP Server: [{}] is Down", name, e);
+            logger.error("UDP Server: [{}] failed to start", name, e);
+        } finally {
+            logger.error("UDP Server: [{}] is Down", name);
         }
     }
 
