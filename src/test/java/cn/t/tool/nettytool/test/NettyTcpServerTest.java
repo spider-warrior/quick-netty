@@ -14,7 +14,6 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,7 +26,7 @@ import java.util.List;
  **/
 public class NettyTcpServerTest {
     public static void main(String[] args) {
-        int[] serverPorts = new int[]{18080, 18081};
+        int serverPort = 18080;
         DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //logging
         daemonConfigBuilder.configLogLevel(LogLevel.DEBUG);
@@ -40,7 +39,7 @@ public class NettyTcpServerTest {
         List<DaemonService> daemonServerList = new ArrayList<>();
         EventLoopGroup bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
         EventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
-        NettyTcpServer tcpServer = new NettyTcpServer(String.format("tcp-server(%s:%s)", "127.0.0.1", Arrays.toString(serverPorts)), serverPorts, nettyChannelInitializer, bossGroup, workerGroup, false, true);
+        NettyTcpServer tcpServer = new NettyTcpServer(String.format("tcp-server(%s:%d)", "127.0.0.1", serverPort), serverPort, nettyChannelInitializer, bossGroup, workerGroup, false, true);
         daemonServerList.add(tcpServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();
         defaultLauncher.setDaemonServiceList(daemonServerList);

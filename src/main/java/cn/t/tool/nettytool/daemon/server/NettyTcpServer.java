@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,9 +24,9 @@ public class NettyTcpServer extends AbstractDaemonServer {
     private final EventLoopGroup workerGroup;
     private final boolean syncBind;
     private final boolean syncClose;
-    private final List<Channel> serverChannelList = new ArrayList<>();
     private final Map<ChannelOption<?>, Object> childOptions = new ConcurrentHashMap<>();
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
+    private Channel serverChannel;
 
     public void doStart() {
         ServerBootstrap bootstrap = new ServerBootstrap();
@@ -74,52 +72,46 @@ public class NettyTcpServer extends AbstractDaemonServer {
         bootstrap.childHandler(channelInitializer);
         try {
             logger.info("TCP Server: [{}] is going to start", name);
-            for (int i=0; i<ports.length; i++) {
-                int index = i;
-                ChannelFuture bindFuture = bootstrap.bind(ports[index]).addListener((ChannelFutureListener)bindAsyncFuture -> {
-                    if(bindAsyncFuture.isSuccess()) {
-                        if(ports[index] == 0) {
-                            int actualBindPort = ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort();
-                            actualBindPorts[index] = actualBindPort;
-                            logger.info("TCP Server: [{}] has bound successfully, port: {}", name, actualBindPort);
-                        } else {
-                            actualBindPorts[index] = ports[index];
-                            logger.info("TCP Server: [{}] has bound successfully, port: {}", name, ports[index]);
-                        }
-                        if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                            for (DaemonListener listener: daemonListenerList) {
-                                listener.startup(this, bindAsyncFuture.channel());
-                            }
-                        }
-                        bindAsyncFuture.channel().closeFuture().addListener((ChannelFutureListener)closeAsyncFuture -> {
-                            logger.info(String.format("TCP [Server]: [%s] is closed", name));
-                            callListenerClose(closeAsyncFuture.channel(), closeAsyncFuture.cause(), "close");
-                        });
+            ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener)bindAsyncFuture -> {
+                if(bindAsyncFuture.isSuccess()) {
+                    if(port == 0) {
+                        actualPort = ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort();
                     } else {
-                        callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
+                        actualPort = port;
                     }
-                });
-                if(syncBind) {
-                    bindFuture.sync();
+                    logger.info("TCP Server: [{}] has bound successfully, port: {}", name, actualPort);
+                    if (!CollectionUtil.isEmpty(daemonListenerList)) {
+                        for (DaemonListener listener: daemonListenerList) {
+                            listener.startup(this, bindAsyncFuture.channel());
+                        }
+                    }
+                    bindAsyncFuture.channel().closeFuture().addListener((ChannelFutureListener)closeAsyncFuture -> {
+                        logger.info("TCP [Server]: [{}] is closed", name);
+                        callListenerClose(closeAsyncFuture.channel(), closeAsyncFuture.cause(), "close");
+                    });
+                } else {
+                    logger.error("TCP Server: [{}] failed to start, port: {}", name, port, bindAsyncFuture.cause());
+                    callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
                 }
-                serverChannelList.add(bindFuture.channel());
+            });
+            if(syncBind) {
+                bindFuture.sync();
             }
+            serverChannel = bindFuture.channel();
             if(syncClose) {
-                for (Channel channel : serverChannelList) {
-                    channel.closeFuture().sync();
-                }
+                serverChannel.closeFuture().sync();
             }
         } catch (Exception e) {
-            logger.error(String.format("TCP Server: [%s] is Down", name), e);
+            logger.error("TCP Server: [{}] is Down", name, e);
         }
     }
 
     private void callListenerClose(Channel channel, Throwable cause, String stage) {
         if(CollectionUtil.isEmpty(daemonListenerList)) {
             if(cause == null) {
-                logger.info(String.format("TCP Server: [%s] close, stage: %s", name, stage));
+                logger.info("TCP Server: [{}] close, stage: {}", name, stage);
             } else {
-                logger.error(String.format("TCP Server: [%s] close, stage: %s", name, stage), cause);
+                logger.error("TCP Server: [{}] close, stage: {}", name, stage, cause);
             }
         } else {
             if(cause == null) {
@@ -135,16 +127,14 @@ public class NettyTcpServer extends AbstractDaemonServer {
     }
 
     @Override
-    public void doClose() {
-        for (Channel serverChannel : serverChannelList) {
-            if(serverChannel != null && serverChannel.isOpen()) {
-                serverChannel.close();
-            }
+    public synchronized void doClose() {
+        if(serverChannel != null && serverChannel.isOpen()) {
+            serverChannel.close();
         }
     }
 
-    public NettyTcpServer(String name, int[] ports, NettyTcpChannelInitializer channelInitializer, EventLoopGroup bossGroup, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
-        super(name, ports);
+    public NettyTcpServer(String name, int port, NettyTcpChannelInitializer channelInitializer, EventLoopGroup bossGroup, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
+        super(name, port);
         this.channelInitializer = channelInitializer;
         this.bossGroup = bossGroup;
         this.workerGroup = workerGroup;

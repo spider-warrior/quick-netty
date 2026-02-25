@@ -8,8 +8,8 @@ public abstract class AbstractDaemonServer extends ListenableDaemonService {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractDaemonServer.class);
     protected String name;
-    protected int[] ports;
-    protected int[] actualBindPorts;
+    protected int port;
+    protected int actualPort;
 
     @Override
     public final void start() {
@@ -31,14 +31,13 @@ public abstract class AbstractDaemonServer extends ListenableDaemonService {
 
     public AbstractDaemonServer() {}
 
-    public AbstractDaemonServer(int[] ports) {
-        this.ports = ports;
+    public AbstractDaemonServer(int port) {
+        this.port = port;
     }
 
-    public AbstractDaemonServer(String name, int[] ports) {
+    public AbstractDaemonServer(String name, int port) {
         this.name = name;
-        this.ports = ports;
-        this.actualBindPorts = new int[ports.length];
+        this.port = port;
     }
 
     public String getName() {
@@ -49,19 +48,19 @@ public abstract class AbstractDaemonServer extends ListenableDaemonService {
         this.name = name;
     }
 
-    public int[] getPorts() {
-        return ports;
+    public int getPort() {
+        return port;
     }
 
-    public void setPorts(int[] ports) {
-        this.ports = ports;
+    public void setPort(int port) {
+        this.port = port;
     }
 
-    public int[] getActualBindPorts() {
-        return actualBindPorts;
+    public int getActualPort() {
+        return actualPort;
     }
 
-    public void setActualBindPorts(int[] actualBindPorts) {
-        this.actualBindPorts = actualBindPorts;
+    public void setActualPort(int actualPort) {
+        this.actualPort = actualPort;
     }
 }

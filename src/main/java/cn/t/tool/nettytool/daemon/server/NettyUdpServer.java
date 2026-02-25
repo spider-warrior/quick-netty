@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,8 +22,8 @@ public class NettyUdpServer extends AbstractDaemonServer {
     private final EventLoopGroup workerGroup;
     private final boolean syncBind;
     private final boolean syncClose;
-    private final List<Channel> serverChannelList = new ArrayList<>();
     private final Map<AttributeKey<?>, Object> attrs = new ConcurrentHashMap<>();
+    private Channel serverChannel;
 
     public void doStart() {
         Bootstrap bootstrap = new Bootstrap();
@@ -43,72 +41,69 @@ public class NettyUdpServer extends AbstractDaemonServer {
         bootstrap.handler(channelInitializer);
         try {
             logger.info("UDP Server: [{}] is going to start", name);
-            for (int i=0; i<ports.length; i++) {
-                int index = i;
-                ChannelFuture bindFuture = bootstrap.bind(ports[index]).addListener((ChannelFutureListener) bindAsyncFuture -> {
-                    if(bindAsyncFuture.isSuccess()) {
-                        if(ports[index] == 0) {
-                            int actualBindPort = ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort();
-                            actualBindPorts[index] = actualBindPort;
-                            logger.info("UDP Server: [{}] has bound successfully, port: {}", name, actualBindPort);
-                        } else {
-                            actualBindPorts[index] = ports[index];
-                            logger.info("UDP Server: [{}] has bound successfully, port: {}", name, ports[index]);
-                        }
-                        if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                            for (DaemonListener listener: daemonListenerList) {
-                                listener.startup(this, bindAsyncFuture.channel());
-                            }
-                        }
+            ChannelFuture bindFuture = bootstrap.bind(port).addListener((ChannelFutureListener) bindAsyncFuture -> {
+                if(bindAsyncFuture.isSuccess()) {
+                    if(port == 0) {
+                        actualPort = ((InetSocketAddress)bindAsyncFuture.channel().localAddress()).getPort();
                     } else {
-                        logger.error(String.format("UDP Server: [%s] failed to start, port: %d", name, ports[index]), bindAsyncFuture.cause());
+                        actualPort = port;
                     }
-                });
-                if(syncBind) {
-                    bindFuture.sync();
-                }
-                serverChannelList.add(bindFuture.channel());
-            }
-            List<ChannelFuture> closeFutureList = new ArrayList<>(serverChannelList.size());
-            for (Channel serverChannel : serverChannelList) {
-                ChannelFuture closeFuture = serverChannel.closeFuture().addListener((ChannelFutureListener)f -> {
-                    logger.info(String.format("UDP Server: [%s] is closed ", name));
+                    logger.info("UDP Server: [{}] has bound successfully, port: {}", name, actualPort);
                     if (!CollectionUtil.isEmpty(daemonListenerList)) {
-                        Throwable throwable = f.cause();
-                        if(throwable == null) {
-                            for (DaemonListener listener: daemonListenerList) {
-                                listener.close(this, f.channel());
-                            }
-                        } else {
-                            for (DaemonListener listener: daemonListenerList) {
-                                listener.close(this, f.channel(), throwable);
-                            }
+                        for (DaemonListener listener: daemonListenerList) {
+                            listener.startup(this, bindAsyncFuture.channel());
                         }
                     }
-                });
-                closeFutureList.add(closeFuture);
-            }
-            for (ChannelFuture closeFuture : closeFutureList) {
-                if(syncClose) {
-                    closeFuture.sync();
+                    bindAsyncFuture.channel().closeFuture().addListener((ChannelFutureListener)closeAsyncFuture -> {
+                        logger.info("UDP [Server]: [{}] is closed", name);
+                        callListenerClose(closeAsyncFuture.channel(), closeAsyncFuture.cause(), "close");
+                    });
+                } else {
+                    logger.error("UDP Server: [{}] failed to start, port: {}", name, port, bindAsyncFuture.cause());
+                    callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
                 }
+            });
+            if(syncBind) {
+                bindFuture.sync();
+            }
+            serverChannel = bindFuture.channel();
+            if(syncClose) {
+                serverChannel.closeFuture().sync();
             }
         } catch (Exception e) {
-            logger.error(String.format("UDP Server: [%s] is Down", name), e);
+            logger.error("UDP Server: [{}] is Down", name, e);
+        }
+    }
+
+    private void callListenerClose(Channel channel, Throwable cause, String stage) {
+        if(CollectionUtil.isEmpty(daemonListenerList)) {
+            if(cause == null) {
+                logger.info("UDP Server: [{}] close, stage: {}", name, stage);
+            } else {
+                logger.error("UDP Server: [{}] close, stage: {}", name, stage, cause);
+            }
+        } else {
+            if(cause == null) {
+                for (DaemonListener listener: daemonListenerList) {
+                    listener.close(this, channel);
+                }
+            } else {
+                for (DaemonListener listener: daemonListenerList) {
+                    listener.close(this, channel, cause);
+                }
+            }
         }
     }
 
     @Override
-    public void doClose() {
-        for (Channel serverChannel : serverChannelList) {
-            if(serverChannel != null && serverChannel.isOpen()) {
-                serverChannel.close();
-            }
+    public synchronized void doClose() {
+        if(serverChannel != null && serverChannel.isOpen()) {
+            serverChannel.close();
         }
     }
 
-    public NettyUdpServer(String name, int[] ports, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
-        super(name, ports);
+    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
+        super(name, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
         this.syncBind = syncBind;
