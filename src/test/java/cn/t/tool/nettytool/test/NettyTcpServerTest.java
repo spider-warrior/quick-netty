@@ -39,7 +39,7 @@ public class NettyTcpServerTest {
         List<DaemonService> daemonServerList = new ArrayList<>();
         EventLoopGroup bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
         EventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
-        NettyTcpServer tcpServer = new NettyTcpServer(String.format("tcp-server(%s:%d)", "127.0.0.1", serverPort), serverPort, nettyChannelInitializer, bossGroup, workerGroup, false, true);
+        NettyTcpServer tcpServer = new NettyTcpServer(String.format("tcp-server(%s:%d)", "127.0.0.1", serverPort), serverPort, nettyChannelInitializer, bossGroup, workerGroup,true);
         daemonServerList.add(tcpServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();
         defaultLauncher.setDaemonServiceList(daemonServerList);

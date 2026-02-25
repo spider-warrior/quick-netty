@@ -20,7 +20,6 @@ public class NettyUdpServer extends AbstractDaemonServer {
 
     private final NettyUdpChannelInitializer channelInitializer;
     private final EventLoopGroup workerGroup;
-    private final boolean syncBind;
     private final boolean syncClose;
     private final Map<AttributeKey<?>, Object> attrs = new ConcurrentHashMap<>();
     private Channel serverChannel;
@@ -63,9 +62,6 @@ public class NettyUdpServer extends AbstractDaemonServer {
                     callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
                 }
             });
-            if(syncBind) {
-                bindFuture.sync();
-            }
             serverChannel = bindFuture.channel();
             if(syncClose) {
                 serverChannel.closeFuture().sync();
@@ -102,11 +98,10 @@ public class NettyUdpServer extends AbstractDaemonServer {
         }
     }
 
-    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
+    public NettyUdpServer(String name, int port, NettyUdpChannelInitializer channelInitializer, EventLoopGroup workerGroup, boolean syncClose) {
         super(name, port);
         this.channelInitializer = channelInitializer;
         this.workerGroup = workerGroup;
-        this.syncBind = syncBind;
         this.syncClose = syncClose;
     }
 

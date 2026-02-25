@@ -54,7 +54,7 @@ public class NettyHttpServerTest {
         NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
         EventLoopGroup bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyServerBoss", true));
         EventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory("NettyServerWorker", true));
-        NettyTcpServer httpServer = new NettyTcpServer("http-server", 5566, channelInitializer, bossGroup, workerGroup, false, true);
+        NettyTcpServer httpServer = new NettyTcpServer("http-server", 5566, channelInitializer, bossGroup, workerGroup, true);
         List<DaemonService> daemonServerList = new ArrayList<>();
         daemonServerList.add(httpServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();

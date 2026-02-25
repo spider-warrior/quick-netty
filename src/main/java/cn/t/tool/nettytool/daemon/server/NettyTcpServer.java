@@ -22,7 +22,6 @@ public class NettyTcpServer extends AbstractDaemonServer {
     private NettyTcpChannelInitializer channelInitializer;
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
-    private final boolean syncBind;
     private final boolean syncClose;
     private final Map<ChannelOption<?>, Object> childOptions = new ConcurrentHashMap<>();
     private final Map<AttributeKey<?>, Object> childAttrs = new ConcurrentHashMap<>();
@@ -94,9 +93,6 @@ public class NettyTcpServer extends AbstractDaemonServer {
                     callListenerClose(bindAsyncFuture.channel(), bindAsyncFuture.cause(), "bind");
                 }
             });
-            if(syncBind) {
-                bindFuture.sync();
-            }
             serverChannel = bindFuture.channel();
             if(syncClose) {
                 serverChannel.closeFuture().sync();
@@ -133,12 +129,11 @@ public class NettyTcpServer extends AbstractDaemonServer {
         }
     }
 
-    public NettyTcpServer(String name, int port, NettyTcpChannelInitializer channelInitializer, EventLoopGroup bossGroup, EventLoopGroup workerGroup, boolean syncBind, boolean syncClose) {
+    public NettyTcpServer(String name, int port, NettyTcpChannelInitializer channelInitializer, EventLoopGroup bossGroup, EventLoopGroup workerGroup, boolean syncClose) {
         super(name, port);
         this.channelInitializer = channelInitializer;
         this.bossGroup = bossGroup;
         this.workerGroup = workerGroup;
-        this.syncBind = syncBind;
         this.syncClose = syncClose;
     }
 
