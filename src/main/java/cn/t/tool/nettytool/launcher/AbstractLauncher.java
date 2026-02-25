@@ -7,10 +7,10 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -21,8 +21,8 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
 
     protected volatile boolean stop = false;
     protected List<DaemonService> daemonServiceList;
-    protected Map<DaemonService, List<Channel>> startedDaemonServiceChannelMap = new ConcurrentHashMap<>();
-    protected List<DaemonService> downDaemonService = new Vector<>();
+    protected Set<DaemonService> startedDaemonService = Collections.synchronizedSet(new HashSet<>());
+    protected Set<DaemonService> downedDaemonService = Collections.synchronizedSet(new HashSet<>());
     protected List<LauncherListener> launcherListenerList;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -83,22 +83,22 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
 
     @Override
     public void startup(DaemonService server, Channel channel) {
-        if(!downDaemonService.contains(server)) {
-            List<Channel> channelList = startedDaemonServiceChannelMap.computeIfAbsent(server, k -> new Vector<>(1));
-            channelList.add(channel);
+        boolean newServer = startedDaemonService.add(server);
+        if(!newServer) {
+            logger.warn("duplicated server started: {}", server);
         }
-        logger.info("server alive count: {}", startedDaemonServiceChannelMap.size());
+        logger.info("server alive count: {}", downedDaemonService.size());
     }
 
     @Override
     public void close(DaemonService server, Channel channel) {
-        synchronized (server) {
-            List<Channel> channelList = startedDaemonServiceChannelMap.get(server);
-            channelList.remove(channel);
-            if(channelList.isEmpty()) {
-                startedDaemonServiceChannelMap.remove(server);
-                downDaemonService.add(server);
-            }
+        boolean contains = startedDaemonService.remove(server);
+        if(!contains) {
+            logger.warn("closed server not found in stopped server list: {}", server);
+        }
+        boolean newServer = downedDaemonService.add(server);
+        if(!newServer) {
+            logger.warn("duplicated server downed: {}", server);
         }
     }
 
