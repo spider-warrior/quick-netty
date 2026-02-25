@@ -56,7 +56,7 @@ public class NettyHttpClientTest {
         daemonConfigBuilder.configHandler(factoriesList);
         DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
-        NettyTcpClient httpClient = new NettyTcpClient("http-client", host, port, channelInitializer, new NioEventLoopGroup(1), false, true);
+        NettyTcpClient httpClient = new NettyTcpClient("http-client", host, port, channelInitializer, new NioEventLoopGroup(1),true);
         httpClient.start();
     }
 

@@ -32,7 +32,7 @@ public class NettyTcpClientTest {
         daemonConfigBuilder.configHandler(Collections.singletonList(ch -> new TcpClientHandler()));
         DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         NettyTcpChannelInitializer channelInitializer = new NettyTcpChannelInitializer(daemonConfig);
-        NettyTcpClient nettyTcpClient = new NettyTcpClient("test-client", "123", 80, channelInitializer, new NioEventLoopGroup(1), true, true);
+        NettyTcpClient nettyTcpClient = new NettyTcpClient("test-client", "123", 80, channelInitializer, new NioEventLoopGroup(1),true);
         nettyTcpClient.addListenerList(Collections.singletonList(new DaemonListenerDemo()));
         nettyTcpClient.start();
         Thread.sleep(10000);
