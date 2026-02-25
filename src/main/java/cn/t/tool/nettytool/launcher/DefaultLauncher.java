@@ -30,7 +30,7 @@ public class DefaultLauncher extends AbstractLauncher {
             }
             boolean notTimeout;
             //等待直到超时
-            while ((notTimeout = System.currentTimeMillis() - before < timeout) && startedDaemonServiceChannelMap.size() != daemonServiceList.size()) {
+            while ((notTimeout = System.currentTimeMillis() - before < timeout) && startedDaemonService.size() != daemonServiceList.size()) {
                 LockSupport.parkNanos(500000000);
             }
             if (!notTimeout) {
@@ -45,10 +45,10 @@ public class DefaultLauncher extends AbstractLauncher {
             TaskConstants.timer.newTimeout(new TimerTask() {
                 public void run(Timeout timeout) {
                     logger.info("monitor down server....");
-                    if (!downDaemonService.isEmpty()) {
-                        logger.info("{}, find down server, size: {}", stop, downDaemonService.size());
-                        while (!downDaemonService.isEmpty() && !stop) {
-                            DaemonService daemonService = downDaemonService.removeFirst();
+                    if (!downedDaemonService.isEmpty()) {
+                        logger.info("{}, find down server, size: {}", stop, downedDaemonService.size());
+                        while (!downedDaemonService.isEmpty() && !stop) {
+                            DaemonService daemonService = downedDaemonService.removeFirst();
                             logger.info("server restarting: {}", daemonService);
                             startServer(daemonService);
                         }
@@ -73,9 +73,9 @@ public class DefaultLauncher extends AbstractLauncher {
             for (DaemonService server: getDaemonServiceList()) {
                 server.close();
             }
-            while (!startedDaemonServiceChannelMap.isEmpty()) {
+            while (!startedDaemonService.isEmpty()) {
                 LockSupport.parkNanos(500000000);
-                logger.info("alive remain: {}, instances: {}", startedDaemonServiceChannelMap.size(), startedDaemonServiceChannelMap.values());
+                logger.info("alive remain: {}, instances: {}", startedDaemonService.size(), startedDaemonService);
             }
         }
         TaskConstants.timer.stop();

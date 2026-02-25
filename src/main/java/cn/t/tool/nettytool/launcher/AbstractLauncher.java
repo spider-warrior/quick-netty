@@ -7,10 +7,7 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -21,8 +18,8 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
 
     protected volatile boolean stop = false;
     protected List<DaemonService> daemonServiceList;
-    protected Set<DaemonService> startedDaemonService = Collections.synchronizedSet(new HashSet<>());
-    protected Set<DaemonService> downedDaemonService = Collections.synchronizedSet(new HashSet<>());
+    protected List<DaemonService> startedDaemonService = Collections.synchronizedList(new ArrayList<>());
+    protected List<DaemonService> downedDaemonService = Collections.synchronizedList(new ArrayList<>());
     protected List<LauncherListener> launcherListenerList;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -87,7 +84,7 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
         if(!newServer) {
             logger.warn("duplicated server started: {}", server);
         }
-        logger.info("server alive count: {}", downedDaemonService.size());
+        logger.info("server alive count: {}", startedDaemonService.size());
     }
 
     @Override
