@@ -3,6 +3,7 @@ package cn.t.tool.nettytool.launcher;
 import cn.t.tool.nettytool.constants.TaskConstants;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.ListenableDaemonService;
+import cn.t.util.common.CollectionUtil;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
 import org.slf4j.Logger;
@@ -19,7 +20,7 @@ public class DefaultLauncher extends AbstractLauncher {
 
     public void doStart() {
         //启动所有服务器
-        if (getDaemonServiceList() != null && !getDaemonServiceList().isEmpty()) {
+        if (!CollectionUtil.isEmpty(getDaemonServiceList())) {
             logger.info("server list size: {}", getDaemonServiceList().size());
             long before = System.currentTimeMillis();
             for (final DaemonService service: getDaemonServiceList()) {
@@ -46,7 +47,7 @@ public class DefaultLauncher extends AbstractLauncher {
                 public void run(Timeout timeout) {
                     logger.info("monitor down server....");
                     if (!downedDaemonService.isEmpty()) {
-                        logger.info("{}, find down server, size: {}", stop, downedDaemonService.size());
+                        logger.info("stop: {}, find down server, size: {}", stop, downedDaemonService.size());
                         while (!downedDaemonService.isEmpty() && !stop) {
                             DaemonService daemonService = downedDaemonService.removeFirst();
                             logger.info("server restarting: {}", daemonService);

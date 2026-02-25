@@ -7,7 +7,9 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -89,19 +91,23 @@ public abstract class AbstractLauncher implements Launcher, DaemonListener {
 
     @Override
     public void close(DaemonService server, Channel channel) {
-        boolean contains = startedDaemonService.remove(server);
-        if(!contains) {
-            logger.warn("closed server not found in stopped server list: {}", server);
+        if(!stop) {
+            boolean contains = startedDaemonService.remove(server);
+            if(!contains) {
+                logger.info("closed server not found in started server list: {}", server);
+            }
+            boolean newServer = downedDaemonService.add(server);
+            if(!newServer) {
+                logger.warn("duplicated server downed: {}", server);
+            }
         }
-        boolean newServer = downedDaemonService.add(server);
-        if(!newServer) {
-            logger.warn("duplicated server downed: {}", server);
-        }
+
     }
 
     @Override
     public void close(DaemonService server, Channel channel, Throwable t) {
         logger.error("server start failed", t);
+        close(server, channel);
     }
 
     public List<DaemonService> getDaemonServiceList() {
